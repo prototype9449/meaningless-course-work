@@ -1,0 +1,83 @@
+body {
+  background: #fff;
+  margin: 30px !important;
+  background: url("../images/bg.jpg");
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.graph {
+  width: 500px;
+  height: 500px;
+  border: 2px solid black;
+  background: #fff;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  input{
+    width: 100%;
+    border-radius: 5px;
+  }
+  .values {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    .values-item {
+      display: inline-flex;
+      height: 24px;
+      white-space: nowrap;
+      margin: 5px 0;
+      .values-item-text {
+        width: 120px;
+      }
+    }
+  }
+  .transitions {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    .transitions_theme {
+      text-align: center;
+      font-weight: bold;
+      margin: 10px 0 10px 120px;
+      line-height: 40px;
+      display: inline-flex;
+      justify-content: center;
+    }
+    .transition_item {
+      display: inline-flex;
+      margin: 10px 0;
+      > span {
+        width: 120px;
+        text-align: center;
+      }
+    }
+    #addButton {
+      width: 30px;
+      margin-left: 10px;
+    }
+  }
+  #kek {
+    .graph_command_panel {
+      display: flex;
+      justify-content: center;
+      margin: 10px 0 10px 120px;
+    }
+  }
+  .button {
+    height: 40px;
+    text-align: center;
+    line-height: 40px;
+    background: linear-gradient( 45deg, #A9F5D0, #00FF40);
+    border-radius: 100px;
+    cursor: pointer;
+    width: 120px;
+  }
+}
+
+.vis-network {
+  background: #fff;
+}
