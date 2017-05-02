@@ -1,6 +1,8 @@
-npm-debug.log
+logs
+*.log
+coverage
+packages/**/demo/dist
 node_modules
-lib
-es6
-example/static
-docs/_site/
+*.iml
+.idea/
+packages/**/lib/
