@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="Хранилище OnlineShopModel" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+      <Schema Namespace="OnlineShopModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="Categories">
           <Key>
             <PropertyRef Name="Id" />
@@ -22,6 +22,7 @@
           <Property Name="Address" Type="nvarchar" MaxLength="60" />
           <Property Name="City" Type="nvarchar" MaxLength="15" />
           <Property Name="Phone" Type="nvarchar" MaxLength="24" />
+          <Property Name="FullName" Type="nvarchar" MaxLength="150" Nullable="false" />
         </EntityType>
         <EntityType Name="EmployeeGroups">
           <Key>
@@ -162,7 +163,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityContainer Name="Хранилище OnlineShopModelContainer">
+        <EntityContainer Name="OnlineShopModelStoreContainer">
           <EntitySet Name="Categories" EntityType="Self.Categories" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Customers" EntityType="Self.Customers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="EmployeeGroups" EntityType="Self.EmployeeGroups" Schema="dbo" store:Type="Tables" />
@@ -223,6 +224,7 @@
           <Property Name="Address" Type="String" MaxLength="60" FixedLength="false" Unicode="true" />
           <Property Name="City" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
           <Property Name="Phone" Type="String" MaxLength="24" FixedLength="false" Unicode="true" />
+          <Property Name="FullName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" Nullable="false" />
           <NavigationProperty Name="Orders" Relationship="Self.FK_Orders_Customers" FromRole="Customers" ToRole="Orders" />
         </EntityType>
         <EntityType Name="Employee">
@@ -384,7 +386,7 @@
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="Хранилище OnlineShopModelContainer" CdmEntityContainer="OnlineShopContext">
+        <EntityContainerMapping StorageEntityContainer="OnlineShopModelStoreContainer" CdmEntityContainer="OnlineShopContext">
           <EntitySetMapping Name="Categories">
             <EntityTypeMapping TypeName="OnlineShopModel.Category">
               <MappingFragment StoreEntitySet="Categories">
@@ -402,6 +404,7 @@
                 <ScalarProperty Name="Address" ColumnName="Address" />
                 <ScalarProperty Name="City" ColumnName="City" />
                 <ScalarProperty Name="Phone" ColumnName="Phone" />
+                <ScalarProperty Name="FullName" ColumnName="FullName" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -481,7 +484,7 @@
         <DesignerProperty Name="EnablePluralization" Value="true" />
         <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
         <DesignerProperty Name="UseLegacyProvider" Value="false" />
-        <DesignerProperty Name="CodeGenerationStrategy" Value="Нет" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
       </DesignerInfoPropertySet>
     </Options>
     <!-- Diagram content (shape and connector positions) -->

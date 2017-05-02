@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace MvcApplication1
 {
@@ -16,7 +17,8 @@ namespace MvcApplication1
                 defaults: new { id = RouteParameter.Optional }
             );
 
-
+            var cors = new EnableCorsAttribute("*", "*", "*");
+            config.EnableCors(cors);
             config.Formatters.JsonFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/html"));
 
             // Раскомментируйте следующую строку кода, чтобы включить поддержку запросов для действий с типом возвращаемого значения IQueryable или IQueryable<T>.

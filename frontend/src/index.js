@@ -1,17 +1,18 @@
-import 'core-js/fn/object/assign'
-import ReactDOM from 'react-dom'
-import React from 'react'
-import {Provider} from 'react-redux'
+export * from './actions';
+export * from './auth';
+export * from './i18n';
+export * from './mui';
+export adminReducer from './reducer';
+export localeReducer from './reducer/locale';
+export queryReducer from './reducer/resource/list/queryReducer';
+export * from './rest';
+export * from './sideEffect/saga';
+export * as fetchUtils from './util/fetch';
+export FieldTitle from './util/FieldTitle';
+export Admin from './Admin';
+export AdminRoutes from './AdminRoutes';
+export CrudRoute from './CrudRoute';
+export Resource from './Resource';
+import {jsonServerRestClient} from './rest/index'
 
-import App from './components/main'
-import createStore from './redux/createStore'
-
-const initialState = window.__INITIAL_STATE__
-const store = createStore(initialState)
-
-ReactDOM.render(
-  <Provider store={store} key="provider">
-    <App/>
-  </Provider>,
-  document.getElementById('root')
-)
+export {jsonServerRestClient as jsonRest}

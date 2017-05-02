@@ -1,5 +1,0 @@
-name: admin-on-rest documentation
-markdown: kramdown
-kramdown:
-  input: GFM
-highlighter: rouge
