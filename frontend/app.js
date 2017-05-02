@@ -7,8 +7,11 @@ import frenchMessages from 'aor-language-french';
 
 //import addUploadFeature from './addUploadFeature';
 
-import {PostList, PostCreate, PostEdit, PostShow, PostIcon} from './posts';
-import {CustomerList, CustomerEdit, CustomerCreate, CustomerIcon} from './customers';
+import {GroupList, GroupCreate, GroupEdit, GroupShow} from './resources/groups';
+import {CustomerList, CustomerEdit, CustomerCreate, CustomerShow, CustomerIcon} from './resources/customers';
+import {EmployeeList, EmployeeEdit, EmployeeCreate, EmployeeShow, EmployeeIcon} from './resources/employees';
+import {ProductList, ProductEdit, ProductShow, ProductCreate} from './resources/products';
+import {CategoryList, CategoryEdit, CategoryShow, CategoryCreate} from './resources/categories';
 
 import * as customMessages from './i18n';
 import authClient from './authClient';
@@ -23,8 +26,13 @@ const restClient          = jsonRest('api');
 
 render(
   <Admin authClient={authClient} restClient={restClient} title="Test Page" locale="en" messages={messages}>
-    <Resource name="customers" list={CustomerList} create={CustomerCreate} edit={CustomerEdit} remove={Delete}
+    <Resource name="customers" list={CustomerList} create={CustomerCreate} edit={CustomerEdit} remove={Delete} show={CustomerShow}
               icon={CustomerIcon}/>
+    <Resource name="employees" list={EmployeeList} create={EmployeeCreate} edit={EmployeeEdit} remove={Delete} show={EmployeeShow}
+              icon={EmployeeIcon}/>
+    <Resource name="groups" list={GroupList} create={GroupCreate} edit={GroupEdit} show={GroupShow} remove={Delete}/>
+    <Resource name="products" list={ProductList} create={ProductCreate} edit={ProductEdit} show={ProductShow} remove={Delete}/>
+    <Resource name="categories" list={CategoryList} create={CategoryCreate} edit={CategoryEdit} show={CategoryShow} remove={Delete}/>
   </Admin>,
   document.getElementById('root'),
 );

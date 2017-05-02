@@ -12,16 +12,21 @@ import {
   LongTextInput,
   ReferenceField,
   ReferenceInput,
+  Datagrid,
+  ReferenceManyField,
   Responsive,
   SelectInput,
   SimpleList,
   SimpleForm,
+  Show,
+  ShowButton,
+  SimpleShowLayout,
   TextField,
   TextInput,
   minLength,
   maxLength,
   translate,
-} from './src/index';
+} from '../src/index';
 import PersonIcon from 'material-ui/svg-icons/social/person';
 import Avatar from 'material-ui/Avatar';
 import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
@@ -30,7 +35,7 @@ import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
 // import ChevronLeft from 'material-ui/svg-icons/navigation/chevron-left';
 // import ChevronRight from 'material-ui/svg-icons/navigation/chevron-right';
 import CommentIcon from 'material-ui/svg-icons/communication/chat-bubble';
-export {CommentIcon as CustomerIcon }
+export {CommentIcon as EmployeeIcon}
 
 // const CommentFilter = ({...props}) => (
 //   <Filter {...props}>
@@ -67,7 +72,7 @@ const cardStyle = {
   verticalAlign: 'top',
 };
 
-const CustomerGrid = translate(({ids, data, basePath, translate}) => {
+const EmployeeGrid = translate(({ids, data, basePath, translate}) => {
   return (
     <div style={{margin: '1em'}}>
       {ids.map(id =>
@@ -83,7 +88,8 @@ const CustomerGrid = translate(({ids, data, basePath, translate}) => {
             <TextField record={data[id]} source="City"/>
           </CardText>
           <CardActions style={{textAlign: 'right'}}>
-            <EditButton resource="customers" basePath={basePath} record={data[id]}/>
+            <EditButton resource="employees" basePath={basePath} record={data[id]}/>
+            <ShowButton resource="employees" basePath={basePath} record={data[id]}/>
           </CardActions>
         </Card>,
       )}
@@ -91,12 +97,12 @@ const CustomerGrid = translate(({ids, data, basePath, translate}) => {
   )
 });
 
-CustomerGrid.defaultProps = {
+EmployeeGrid.defaultProps = {
   data: {},
   ids : [],
 };
 
-const CustomerMobileList = (props) => (
+const EmployeeMobileList = (props) => (
   <SimpleList
     primaryText={record => record.FullName}
     secondaryText={record => record.Phone}
@@ -106,33 +112,48 @@ const CustomerMobileList = (props) => (
   />
 );
 
-export const CustomerList = ({...props}) => (
+export const EmployeeList = ({...props}) => (
   <List {...props}>
-    <Responsive small={<CustomerMobileList />} medium={<CustomerGrid />}/>
+    <Responsive small={<EmployeeMobileList />} medium={<EmployeeGrid />}/>
   </List>
 );
 
-export const CustomerEdit = ({...props}) => (
+export const EmployeeEdit = ({...props}) => (
   <Edit {...props}>
     <SimpleForm>
-      <DisabledInput source="Id"/>
+      <DisabledInput source="id"/>
       <TextInput source="FullName" validate={minLength(10)}/>
-      <TextInput source="CompanyName" validate={minLength(10)}/>
       <TextInput source="Phone" validate={minLength(10)}/>
       <TextInput source="City" validate={[minLength(4), maxLength(15)]}/>
-      <LongTextInput source="Address" validate={minLength(10)}/>
     </SimpleForm>
   </Edit>
 );
 
-export const CustomerCreate = ({...props}) => (
+export const EmployeeShow = ({...props}) => (
+  <Show {...props}>
+    <SimpleShowLayout>
+      <TextField source="id"/>
+      <TextField source="FullName"/>
+      <TextField source="Phone"/>
+      <TextField source="City"/>
+      <ReferenceManyField label="Groups" reference="groups" target="EmployeeId">
+        <Datagrid selectable={false}>
+          <TextField source="id"/>
+          <TextField source="Name"/>
+          <TextField source="Description"/>
+          <ShowButton/>
+        </Datagrid>
+      </ReferenceManyField>
+    </SimpleShowLayout>
+  </Show>
+);
+
+export const EmployeeCreate = ({...props}) => (
   <Create {...props} defaultValues={{created_at: new Date()}}>
     <SimpleForm>
       <TextInput source="FullName" validate={minLength(10)}/>
-      <TextInput source="CompanyName" validate={minLength(10)}/>
       <TextInput source="Phone" validate={minLength(10)}/>
       <TextInput source="City" validate={minLength(4)}/>
-      <LongTextInput source="Address" validate={minLength(10)}/>
     </SimpleForm>
   </Create>
 );
