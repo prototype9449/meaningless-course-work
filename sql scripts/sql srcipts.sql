@@ -1,6 +1,6 @@
 USE [OnlineShop]
 GO
-/****** Object:  Table [dbo].[Categories]    Script Date: 01.05.2017 22:14:51 ******/
+/****** Object:  Table [dbo].[Categories]    Script Date: 5/2/2017 8:52:02 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -14,11 +14,16 @@ CREATE TABLE [dbo].[Categories](
 	[id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
 
+GO
+/****** Object:  Table [dbo].[Customers]    Script Date: 5/2/2017 8:52:02 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 CREATE TABLE [dbo].[Customers](
-	[id] [int] identity(1,1) NOT NULL,
-	[FullName] nvarchar(50) not null,
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[FullName] [nvarchar](50) NOT NULL,
 	[CompanyName] [nvarchar](40) NOT NULL,
 	[Address] [nvarchar](60) NULL,
 	[City] [nvarchar](20) NULL,
@@ -30,7 +35,7 @@ CREATE TABLE [dbo].[Customers](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[EmployeeGroups]    Script Date: 01.05.2017 22:14:51 ******/
+/****** Object:  Table [dbo].[EmployeeGroups]    Script Date: 5/2/2017 8:52:02 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -46,7 +51,7 @@ CREATE TABLE [dbo].[EmployeeGroups](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[Employees]    Script Date: 01.05.2017 22:14:51 ******/
+/****** Object:  Table [dbo].[Employees]    Script Date: 5/2/2017 8:52:02 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -65,7 +70,7 @@ CREATE TABLE [dbo].[Employees](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[Groups]    Script Date: 01.05.2017 22:14:51 ******/
+/****** Object:  Table [dbo].[Groups]    Script Date: 5/2/2017 8:52:02 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -81,12 +86,12 @@ CREATE TABLE [dbo].[Groups](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[Order Details]    Script Date: 01.05.2017 22:14:51 ******/
+/****** Object:  Table [dbo].[OrderDetails]    Script Date: 5/2/2017 8:52:02 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE TABLE [dbo].[Order Details](
+CREATE TABLE [dbo].[OrderDetails](
 	[OrderId] [int] NOT NULL,
 	[ProductID] [int] NOT NULL,
 	[Number] [smallint] NOT NULL,
@@ -98,15 +103,15 @@ CREATE TABLE [dbo].[Order Details](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[Orders]    Script Date: 01.05.2017 22:14:51 ******/
+/****** Object:  Table [dbo].[Orders]    Script Date: 5/2/2017 8:52:02 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[Orders](
 	[id] [int] IDENTITY(1,1) NOT NULL,
-	[CustomerID] [int] not NULL,
-	[EmployeeID] [int] not NULL,
+	[CustomerID] [int] NOT NULL,
+	[EmployeeID] [int] NOT NULL,
 	[OrderDate] [datetime] NULL,
  CONSTRAINT [PK_Orders] PRIMARY KEY CLUSTERED 
 (
@@ -115,7 +120,7 @@ CREATE TABLE [dbo].[Orders](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[Products]    Script Date: 01.05.2017 22:14:51 ******/
+/****** Object:  Table [dbo].[Products]    Script Date: 5/2/2017 8:52:02 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -133,7 +138,7 @@ CREATE TABLE [dbo].[Products](
 ) ON [PRIMARY]
 
 GO
-ALTER TABLE [dbo].[Order Details] ADD  CONSTRAINT [DF_Order_Details_Quantity]  DEFAULT ((1)) FOR [Number]
+ALTER TABLE [dbo].[OrderDetails] ADD  CONSTRAINT [DF_Order_Details_Quantity]  DEFAULT ((1)) FOR [Number]
 GO
 ALTER TABLE [dbo].[Products] ADD  CONSTRAINT [DF_Products_UnitPrice]  DEFAULT ((0)) FOR [Price]
 GO
@@ -149,15 +154,15 @@ REFERENCES [dbo].[Groups] ([id])
 GO
 ALTER TABLE [dbo].[EmployeeGroups] CHECK CONSTRAINT [FK_GroupId_Groups]
 GO
-ALTER TABLE [dbo].[Order Details]  WITH NOCHECK ADD  CONSTRAINT [FK_Order_Details_Orders] FOREIGN KEY([OrderId])
+ALTER TABLE [dbo].[OrderDetails]  WITH NOCHECK ADD  CONSTRAINT [FK_Order_Details_Orders] FOREIGN KEY([OrderId])
 REFERENCES [dbo].[Orders] ([id])
 GO
-ALTER TABLE [dbo].[Order Details] CHECK CONSTRAINT [FK_Order_Details_Orders]
+ALTER TABLE [dbo].[OrderDetails] CHECK CONSTRAINT [FK_Order_Details_Orders]
 GO
-ALTER TABLE [dbo].[Order Details]  WITH NOCHECK ADD  CONSTRAINT [FK_Order_Details_Products] FOREIGN KEY([ProductID])
+ALTER TABLE [dbo].[OrderDetails]  WITH NOCHECK ADD  CONSTRAINT [FK_Order_Details_Products] FOREIGN KEY([ProductID])
 REFERENCES [dbo].[Products] ([id])
 GO
-ALTER TABLE [dbo].[Order Details] CHECK CONSTRAINT [FK_Order_Details_Products]
+ALTER TABLE [dbo].[OrderDetails] CHECK CONSTRAINT [FK_Order_Details_Products]
 GO
 ALTER TABLE [dbo].[Orders]  WITH NOCHECK ADD  CONSTRAINT [FK_EmployeeId_Employees] FOREIGN KEY([EmployeeID])
 REFERENCES [dbo].[Employees] ([id])
@@ -178,9 +183,9 @@ ALTER TABLE [dbo].[Employees]  WITH NOCHECK ADD  CONSTRAINT [CK_Birthdate] CHECK
 GO
 ALTER TABLE [dbo].[Employees] CHECK CONSTRAINT [CK_Birthdate]
 GO
-ALTER TABLE [dbo].[Order Details]  WITH NOCHECK ADD  CONSTRAINT [CK_Quantity] CHECK  (([Number]>(0)))
+ALTER TABLE [dbo].[OrderDetails]  WITH NOCHECK ADD  CONSTRAINT [CK_Quantity] CHECK  (([Number]>(0)))
 GO
-ALTER TABLE [dbo].[Order Details] CHECK CONSTRAINT [CK_Quantity]
+ALTER TABLE [dbo].[OrderDetails] CHECK CONSTRAINT [CK_Quantity]
 GO
 ALTER TABLE [dbo].[Products]  WITH NOCHECK ADD  CONSTRAINT [CK_Products_UnitPrice] CHECK  (([Price]>=(0)))
 GO
