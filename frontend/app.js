@@ -20,7 +20,7 @@ import authClient from './authClient';
 
 const messages = {
   fr: {...frenchMessages, ...customMessages.fr},
-  en: {...englishMessages, ...customMessages.en},
+  en: {...englishMessages, ...customMessages.en}
 };
 
 const restClient = jsonRest('api');
@@ -43,5 +43,5 @@ render(
     <Resource name="orderdetail" list={OrderDetailList} create={OrderDetailCreate} edit={OrderDetailEdit}
               show={OrderDetailShow} remove={Delete}/>
   </Admin>,
-  document.getElementById('root'),
+  document.getElementById('root')
 );

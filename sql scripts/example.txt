@@ -1,0 +1,37 @@
+CREATE SCHEMA Security  
+go
+
+CREATE FUNCTION Security.projectSecurityPredicate(@EmployeeId int)  
+    RETURNS TABLE
+    WITH SCHEMABINDING
+AS  
+    RETURN SELECT 1 AS myResult 
+		where exists(select FullName from dbo.Employees join dbo.Orders on 
+		dbo.Orders.EmployeeID = dbo.Employees.id 
+		and dbo.Orders.EmployeeID = @EmployeeId 
+		and Employees.FullName = CAST(SESSION_CONTEXT(N'UserId') AS nvarchar(150)))
+GO
+
+CREATE SECURITY POLICY Security.projectSecurityPolicy  
+    ADD FILTER PREDICATE Security.projectSecurityPredicate(EmployeeID) ON dbo.Orders,
+    ADD BLOCK PREDICATE Security.projectSecurityPredicate(EmployeeID) ON dbo.Orders
+go  
+
+EXEC sp_set_session_context N'UserId', 'Sergey Popov'
+
+ALTER SECURITY POLICY Security.projectSecurityPolicy  
+WITH (STATE = On); 
+
+select * from Orders
+
+drop SECURITY POLICY Security.projectSecurityPolicy
+drop function Security.projectSecurityPredicate
+
+
+select FullName from dbo.Employees join dbo.Orders on 
+		dbo.Orders.EmployeeID = dbo.Employees.id 
+		and dbo.Orders.EmployeeID = 1 and Employees.FullName = CAST(SESSION_CONTEXT(N'UserId') AS nvarchar(150))
+
+		select CAST(SESSION_CONTEXT(N'UserId') AS nvarchar(150))
+
+		select * from ORders

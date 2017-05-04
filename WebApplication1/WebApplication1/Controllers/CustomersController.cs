@@ -29,7 +29,11 @@ namespace WebApplication1.Controllers
         [ResponseType(typeof(Customer))]
         public async Task<IHttpActionResult> GetCustomer(int id)
         {
-            Customer customer = await db.Customers.FindAsync(id);
+            db.Database.Connection.Open();
+            db.Database.ExecuteSqlCommand("EXEC sp_set_session_context 'user_id', '4'");
+            var name = await db.Database.SqlQuery<string>("SELECT SESSION_CONTEXT(N'user_id')").FirstAsync();
+            
+            Customer customer = db.Customers.Find(id);
             if (customer == null)
             {
                 return NotFound();
@@ -83,7 +87,7 @@ namespace WebApplication1.Controllers
             }
 
             db.Customers.Add(customer);
-            db.SaveChangesAsync();
+            db.SaveChanges();
 
             return CreatedAtRoute("DefaultApi", new { id = customer.id }, customer);
         }

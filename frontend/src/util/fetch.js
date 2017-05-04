@@ -2,7 +2,7 @@ import HttpError from './HttpError';
 
 export const fetchJson = (url, options = {}) => {
     const requestHeaders = options.headers || new Headers({
-        Accept: 'application/json',
+        Accept: 'application/json'
     });
     if (!(options && options.body && options.body instanceof FormData)) {
         requestHeaders.set('Content-Type', 'application/json');
@@ -15,7 +15,7 @@ export const fetchJson = (url, options = {}) => {
             status: response.status,
             statusText: response.statusText,
             headers: response.headers,
-            body: text,
+            body: text
         })))
         .then(({ status, statusText, headers, body }) => {
             let json;
