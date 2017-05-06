@@ -6,7 +6,6 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Http.Description;
@@ -20,16 +19,21 @@ namespace WebApplication1.Controllers
         private OnlineShopContext db = new OnlineShopContext();
 
         // GET: api/Groups
-        public IQueryable<Group> GetGroups()
+        public IQueryable<Group> GetGroups(int EmployeeId = -1)
         {
-            return db.Groups;
+            if (EmployeeId == -1)
+            {
+                return db.Groups;
+            }
+
+            return db.Groups.Include(x => x.Employees).Where(x => x.Employees.Count(y => y.id == EmployeeId) != 0);
         }
 
         // GET: api/Groups/5
         [ResponseType(typeof(Group))]
-        public async Task<IHttpActionResult> GetGroup(int id)
+        public IHttpActionResult GetGroup(int id)
         {
-            Group group = await db.Groups.Where(x => x.id == id).Include(x => x.Employees).FirstOrDefaultAsync();
+            Group group = db.Groups.Find(id);
             if (group == null)
             {
                 return NotFound();
@@ -40,7 +44,7 @@ namespace WebApplication1.Controllers
 
         // PUT: api/Groups/5
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> PutGroup(int id, Group group)
+        public IHttpActionResult PutGroup(int id, Group group)
         {
             if (!ModelState.IsValid)
             {
@@ -56,7 +60,7 @@ namespace WebApplication1.Controllers
 
             try
             {
-                await db.SaveChangesAsync();
+                db.SaveChanges();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -75,7 +79,7 @@ namespace WebApplication1.Controllers
 
         // POST: api/Groups
         [ResponseType(typeof(Group))]
-        public async Task<IHttpActionResult> PostGroup(Group group)
+        public IHttpActionResult PostGroup(Group group)
         {
             if (!ModelState.IsValid)
             {
@@ -83,23 +87,23 @@ namespace WebApplication1.Controllers
             }
 
             db.Groups.Add(group);
-            await db.SaveChangesAsync();
+            db.SaveChanges();
 
             return CreatedAtRoute("DefaultApi", new { id = group.id }, group);
         }
 
         // DELETE: api/Groups/5
         [ResponseType(typeof(Group))]
-        public async Task<IHttpActionResult> DeleteGroup(int id)
+        public IHttpActionResult DeleteGroup(int id)
         {
-            Group group = await db.Groups.FindAsync(id);
+            Group group = db.Groups.Find(id);
             if (group == null)
             {
                 return NotFound();
             }
 
             db.Groups.Remove(group);
-            await db.SaveChangesAsync();
+            db.SaveChanges();
 
             return Ok(group);
         }

@@ -16,7 +16,7 @@ namespace WebApplication1
     public partial class OnlineShopContext : DbContext
     {
         public OnlineShopContext()
-            : base("name=OnlineShopContext")
+            : base("name=OnlineShopEntities3")
         {
             this.Configuration.LazyLoadingEnabled = false;
         }
@@ -32,6 +32,7 @@ namespace WebApplication1
         public virtual DbSet<Group> Groups { get; set; }
         public virtual DbSet<OrderDetail> OrderDetails { get; set; }
         public virtual DbSet<Order> Orders { get; set; }
+        public virtual DbSet<Predicate> Predicates { get; set; }
         public virtual DbSet<Product> Products { get; set; }
     }
 }

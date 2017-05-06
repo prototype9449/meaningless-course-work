@@ -6,7 +6,6 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Http.Description;
@@ -27,9 +26,9 @@ namespace WebApplication1.Controllers
 
         // GET: api/Orders/5
         [ResponseType(typeof(Order))]
-        public async Task<IHttpActionResult> GetOrder(int id)
+        public IHttpActionResult GetOrder(int id)
         {
-            Order order = await db.Orders.FindAsync(id);
+            Order order = db.Orders.Find(id);
             if (order == null)
             {
                 return NotFound();
@@ -40,7 +39,7 @@ namespace WebApplication1.Controllers
 
         // PUT: api/Orders/5
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> PutOrder(int id, Order order)
+        public IHttpActionResult PutOrder(int id, Order order)
         {
             if (!ModelState.IsValid)
             {
@@ -56,7 +55,7 @@ namespace WebApplication1.Controllers
 
             try
             {
-                await db.SaveChangesAsync();
+                db.SaveChanges();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -75,7 +74,7 @@ namespace WebApplication1.Controllers
 
         // POST: api/Orders
         [ResponseType(typeof(Order))]
-        public async Task<IHttpActionResult> PostOrder(Order order)
+        public IHttpActionResult PostOrder(Order order)
         {
             if (!ModelState.IsValid)
             {
@@ -83,23 +82,23 @@ namespace WebApplication1.Controllers
             }
 
             db.Orders.Add(order);
-            await db.SaveChangesAsync();
+            db.SaveChanges();
 
             return CreatedAtRoute("DefaultApi", new { id = order.id }, order);
         }
 
         // DELETE: api/Orders/5
         [ResponseType(typeof(Order))]
-        public async Task<IHttpActionResult> DeleteOrder(int id)
+        public IHttpActionResult DeleteOrder(int id)
         {
-            Order order = await db.Orders.FindAsync(id);
+            Order order = db.Orders.Find(id);
             if (order == null)
             {
                 return NotFound();
             }
 
             db.Orders.Remove(order);
-            await db.SaveChangesAsync();
+            db.SaveChanges();
 
             return Ok(order);
         }

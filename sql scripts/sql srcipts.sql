@@ -28,6 +28,7 @@ CREATE TABLE [dbo].[Customers](
 	[Address] [nvarchar](60) NULL,
 	[City] [nvarchar](20) NULL,
 	[Phone] [nvarchar](24) NULL,
+	[OwnerId] nvarchar(128) DEFAULT CAST(SESSION_CONTEXT(N'UserId') AS nvarchar(128)),
  CONSTRAINT [PK_Customers] PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
@@ -137,6 +138,46 @@ CREATE TABLE [dbo].[Products](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 
+
+
+create TABLE [dbo].[Policies](	
+	[GroupId] [int] NOT NULL,
+	[PredicateId] [int] NOT NULL	
+ CONSTRAINT [PK_Policies] PRIMARY KEY CLUSTERED 
+(
+	[GroupId] ASC, [PredicateId] asc
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+CREATE TABLE [dbo].[Predicates](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[Value] [nvarchar](200) NOT NULL,
+	[TableName] [nvarchar](100) not null,
+ CONSTRAINT [PK_Predicates] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+
+GO
+
+ALTER TABLE [dbo].[Policies]  WITH CHECK ADD  CONSTRAINT [FK_Policies_Groups] FOREIGN KEY([GroupId])
+REFERENCES [dbo].[Groups] ([id])
+GO
+
+ALTER TABLE [dbo].[Policies] CHECK CONSTRAINT [FK_Policies_Groups]
+GO
+
+ALTER TABLE [dbo].[Policies]  WITH CHECK ADD  CONSTRAINT [FK_Policies_Predicates] FOREIGN KEY([PredicateId])
+REFERENCES [dbo].[Predicates] ([id])
+GO
+
+ALTER TABLE [dbo].[Policies] CHECK CONSTRAINT [FK_Policies_Predicates]
+GO
+
 GO
 ALTER TABLE [dbo].[OrderDetails] ADD  CONSTRAINT [DF_Order_Details_Quantity]  DEFAULT ((1)) FOR [Number]
 GO
@@ -195,3 +236,84 @@ ALTER TABLE [dbo].[Products]  WITH NOCHECK ADD  CONSTRAINT [CK_UnitsInStock] CHE
 GO
 ALTER TABLE [dbo].[Products] CHECK CONSTRAINT [CK_UnitsInStock]
 GO
+
+
+create PROCEDURE setInitialContext(   
+    @UserId int)
+AS
+	SET NOCOUNT ON;  
+	declare @FullName nvarchar(150);
+	declare @City nvarchar(20);
+	declare @Phone nvarchar(24);
+    select @FullName = FullName, @City = City, @Phone = Phone from Employees where id = @UserId
+	EXEC sp_set_session_context 'FullName', @FullName;  
+	EXEC sp_set_session_context 'UserId', @UserId; 
+	EXEC sp_set_session_context 'City', @City;  
+	EXEC sp_set_session_context 'Phone', @Phone;  
+GO   
+
+drop function if exists [Security].getUserAccessClr
+drop ASSEMBLY if exists Parser
+create ASSEMBLY Parser FROM 'C:\Users\Сергей\Documents\Visual Studio 2015\Projects\ClassLibrary1\ClassLibrary1\Parser.dll';  
+GO 
+create FUNCTION [Security].getUserAccessClr(@Predicate nvarchar(50)) RETURNS bit  
+ AS EXTERNAL NAME Parser.ContextParser.ExecutePredicate;   
+GO  
+
+CREATE FUNCTION [Security].getUserAccess(@TableName nvarchar(50))  
+RETURNS bit   
+AS   
+
+
+drop function if exists getUserAccess
+go
+CREATE FUNCTION getUserAccess(@TableName nvarchar(50))  
+RETURNS bit
+ WITH SCHEMABINDING   
+AS   
+-- Returns the stock level for the product.  
+BEGIN
+ DECLARE @predicates nvarchar(4000);
+ Declare @result bit;
+ select @predicates = COALESCE(@predicates + ',', '') + dbo.Predicates.Value from 
+	 dbo.Predicates join  dbo.Policies 
+	on  dbo.Predicates.id =  dbo.Policies.PredicateId 
+	and  dbo.Policies.TableName = @TableName
+	join  dbo.EmployeeGroups 
+	on  dbo.EmployeeGroups.GroupId =  dbo.Policies.GroupId
+	and  dbo.EmployeeGroups.EmployeeId = CAST(SESSION_CONTEXT(N'UserId') AS int);
+
+	if @predicates is Null
+	  begin
+	    set @result = 1
+	  end
+	else
+	  begin
+	    select @result = dbo.getUserAccessClr(@predicates)
+	  end
+	  return @result	
+END;
+
+drop function if exists getUserAccessClr
+go
+drop ASSEMBLY if exists Parser
+go
+create ASSEMBLY Parser FROM 'C:\Users\Сергей\Documents\Visual Studio 2015\Projects\ClassLibrary1\ClassLibrary1\Parser.dll';  
+GO 
+create FUNCTION getUserAccessClr(@Predicate nvarchar(50)) RETURNS bit  
+ AS EXTERNAL NAME Parser.ContextParser.ExecutePredicate;   
+GO  
+
+drop function if exists [securityPredicate]
+go
+create FUNCTION securityPredicateOrders(@emId int)  
+    RETURNS TABLE 
+	 WITH SCHEMABINDING
+AS  
+    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('Orders')) = 1) 
+
+go
+create SECURITY POLICY dbo.[OrdersPolicy]   
+ADD FILTER PREDICATE dbo.securityPredicateOrders(EmployeeId)   
+    ON [dbo].[Orders]
+WITH (STATE = ON);   

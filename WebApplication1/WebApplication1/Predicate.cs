@@ -12,23 +12,19 @@ namespace WebApplication1
     using System;
     using System.Collections.Generic;
     
-    public partial class Customer
+    public partial class Predicate
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Customer()
+        public Predicate()
         {
-            this.Orders = new HashSet<Order>();
+            this.Groups = new HashSet<Group>();
         }
     
         public int id { get; set; }
-        public string FullName { get; set; }
-        public string CompanyName { get; set; }
-        public string Address { get; set; }
-        public string City { get; set; }
-        public string Phone { get; set; }
-        public Nullable<int> OwnerId { get; set; }
+        public string Value { get; set; }
+        public string TableName { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Order> Orders { get; set; }
+        public virtual ICollection<Group> Groups { get; set; }
     }
 }

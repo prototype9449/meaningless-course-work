@@ -14,6 +14,7 @@ import {ProductList, ProductEdit, ProductShow, ProductCreate} from './resources/
 import {CategoryList, CategoryEdit, CategoryShow, CategoryCreate} from './resources/categories';
 import {OrderList, OrderEdit, OrderShow, OrderCreate} from './resources/orders';
 import {OrderDetailList, OrderDetailEdit, OrderDetailShow, OrderDetailCreate} from './resources/orderDetails';
+import {PolicyList, PolicyEdit, PolicyShow, PolicyCreate} from './resources/policies';
 
 import * as customMessages from './i18n';
 import authClient from './authClient';
@@ -42,6 +43,8 @@ render(
     <Resource name="orders" list={OrderList} create={OrderCreate} edit={OrderEdit} show={OrderShow} remove={Delete}/>
     <Resource name="orderdetail" list={OrderDetailList} create={OrderDetailCreate} edit={OrderDetailEdit}
               show={OrderDetailShow} remove={Delete}/>
+    <Resource name="policies" list={PolicyList} create={PolicyCreate} edit={PolicyEdit}
+              show={PolicyShow} remove={Delete}/>
   </Admin>,
   document.getElementById('root')
 );

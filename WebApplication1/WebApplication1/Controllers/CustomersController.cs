@@ -29,10 +29,6 @@ namespace WebApplication1.Controllers
         [ResponseType(typeof(Customer))]
         public async Task<IHttpActionResult> GetCustomer(int id)
         {
-            db.Database.Connection.Open();
-            db.Database.ExecuteSqlCommand("EXEC sp_set_session_context 'user_id', '4'");
-            var name = await db.Database.SqlQuery<string>("SELECT SESSION_CONTEXT(N'user_id')").FirstAsync();
-            
             Customer customer = db.Customers.Find(id);
             if (customer == null)
             {

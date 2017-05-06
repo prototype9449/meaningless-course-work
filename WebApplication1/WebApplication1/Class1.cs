@@ -15,7 +15,7 @@ namespace WebApplication1
                 if (userId != null)
                 {
                     DbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = "EXEC sp_set_session_context @key=N'UserId', @value=@UserId";
+                    cmd.CommandText = "EXEC setInitialContext @UserId";
                     DbParameter param = cmd.CreateParameter();
                     param.ParameterName = "@UserId";
                     param.Value = userId;
@@ -128,5 +128,13 @@ namespace WebApplication1
         {
             AddInterceptor(new SessionContextInterceptor());
         }
+    }
+
+    public class PolicyModel
+    {
+        public string GroupIds { get; set; }
+        public int id { get; set; }
+        public string PredicateValue { get; set; }
+        public string TableName { get; set; }
     }
 }

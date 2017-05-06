@@ -23,6 +23,7 @@
           <Property Name="Address" Type="nvarchar" MaxLength="60" />
           <Property Name="City" Type="nvarchar" MaxLength="20" />
           <Property Name="Phone" Type="nvarchar" MaxLength="24" />
+          <Property Name="OwnerId" Type="int" />
         </EntityType>
         <EntityType Name="EmployeeGroups">
           <Key>
@@ -68,6 +69,22 @@
           <Property Name="CustomerID" Type="int" Nullable="false" />
           <Property Name="EmployeeID" Type="int" Nullable="false" />
           <Property Name="OrderDate" Type="datetime" />
+        </EntityType>
+        <EntityType Name="Policies">
+          <Key>
+            <PropertyRef Name="GroupId" />
+            <PropertyRef Name="PredicateId" />
+          </Key>
+          <Property Name="GroupId" Type="int" Nullable="false" />
+          <Property Name="PredicateId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Predicates">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Value" Type="nvarchar" MaxLength="200" Nullable="false" />
+          <Property Name="TableName" Type="nvarchar" MaxLength="50" Nullable="false" />
         </EntityType>
         <EntityType Name="Products">
           <Key>
@@ -151,6 +168,30 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_Policies_Groups">
+          <End Role="Groups" Type="Self.Groups" Multiplicity="1" />
+          <End Role="Policies" Type="Self.Policies" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Groups">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Policies">
+              <PropertyRef Name="GroupId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Policies_Predicates">
+          <End Role="Predicates" Type="Self.Predicates" Multiplicity="1" />
+          <End Role="Policies" Type="Self.Policies" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Predicates">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Policies">
+              <PropertyRef Name="PredicateId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Products_Categories">
           <End Role="Categories" Type="Self.Categories" Multiplicity="0..1" />
           <End Role="Products" Type="Self.Products" Multiplicity="*" />
@@ -171,6 +212,8 @@
           <EntitySet Name="Groups" EntityType="Self.Groups" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="OrderDetails" EntityType="Self.OrderDetails" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Orders" EntityType="Self.Orders" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Policies" EntityType="Self.Policies" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Predicates" EntityType="Self.Predicates" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Products" EntityType="Self.Products" Schema="dbo" store:Type="Tables" />
           <AssociationSet Name="FK_EmployeeId_Employees" Association="Self.FK_EmployeeId_Employees">
             <End Role="Employees" EntitySet="Employees" />
@@ -195,6 +238,14 @@
           <AssociationSet Name="FK_Orders_Customers" Association="Self.FK_Orders_Customers">
             <End Role="Customers" EntitySet="Customers" />
             <End Role="Orders" EntitySet="Orders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Policies_Groups" Association="Self.FK_Policies_Groups">
+            <End Role="Groups" EntitySet="Groups" />
+            <End Role="Policies" EntitySet="Policies" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Policies_Predicates" Association="Self.FK_Policies_Predicates">
+            <End Role="Predicates" EntitySet="Predicates" />
+            <End Role="Policies" EntitySet="Policies" />
           </AssociationSet>
           <AssociationSet Name="FK_Products_Categories" Association="Self.FK_Products_Categories">
             <End Role="Categories" EntitySet="Categories" />
@@ -225,6 +276,7 @@
           <Property Name="Address" Type="String" MaxLength="60" FixedLength="false" Unicode="true" />
           <Property Name="City" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
           <Property Name="Phone" Type="String" MaxLength="24" FixedLength="false" Unicode="true" />
+          <Property Name="OwnerId" Type="Int32" />
           <NavigationProperty Name="Orders" Relationship="Self.FK_Orders_Customers" FromRole="Customers" ToRole="Orders" />
         </EntityType>
         <EntityType Name="Employee">
@@ -248,6 +300,7 @@
           <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Description" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="Employees" Relationship="Self.EmployeeGroups" FromRole="Groups" ToRole="Employees" />
+          <NavigationProperty Name="Predicates" Relationship="Self.Policies" FromRole="Groups" ToRole="Predicates" />
         </EntityType>
         <EntityType Name="OrderDetail">
           <Key>
@@ -271,6 +324,15 @@
           <NavigationProperty Name="Customer" Relationship="Self.FK_Orders_Customers" FromRole="Orders" ToRole="Customers" />
           <NavigationProperty Name="Employee" Relationship="Self.FK_EmployeeId_Employees" FromRole="Orders" ToRole="Employees" />
           <NavigationProperty Name="OrderDetails" Relationship="Self.FK_Order_Details_Orders" FromRole="Orders" ToRole="OrderDetails" />
+        </EntityType>
+        <EntityType Name="Predicate">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Value" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="TableName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <NavigationProperty Name="Groups" Relationship="Self.Policies" FromRole="Predicates" ToRole="Groups" />
         </EntityType>
         <EntityType Name="Product">
           <Key>
@@ -348,13 +410,18 @@
           <End Role="Employees" Type="Self.Employee" Multiplicity="*" />
           <End Role="Groups" Type="Self.Group" Multiplicity="*" />
         </Association>
-        <EntityContainer Name="OnlineShopContext" annotation:LazyLoadingEnabled="true">
+        <Association Name="Policies">
+          <End Role="Groups" Type="Self.Group" Multiplicity="*" />
+          <End Role="Predicates" Type="Self.Predicate" Multiplicity="*" />
+        </Association>
+        <EntityContainer Name="OnlineShopEntities3" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Categories" EntityType="Self.Category" />
           <EntitySet Name="Customers" EntityType="Self.Customer" />
           <EntitySet Name="Employees" EntityType="Self.Employee" />
           <EntitySet Name="Groups" EntityType="Self.Group" />
           <EntitySet Name="OrderDetails" EntityType="Self.OrderDetail" />
           <EntitySet Name="Orders" EntityType="Self.Order" />
+          <EntitySet Name="Predicates" EntityType="Self.Predicate" />
           <EntitySet Name="Products" EntityType="Self.Product" />
           <AssociationSet Name="FK_Products_Categories" Association="Self.FK_Products_Categories">
             <End Role="Categories" EntitySet="Categories" />
@@ -380,13 +447,17 @@
             <End Role="Employees" EntitySet="Employees" />
             <End Role="Groups" EntitySet="Groups" />
           </AssociationSet>
+          <AssociationSet Name="Policies" Association="Self.Policies">
+            <End Role="Groups" EntitySet="Groups" />
+            <End Role="Predicates" EntitySet="Predicates" />
+          </AssociationSet>
         </EntityContainer>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="OnlineShopModelStoreContainer" CdmEntityContainer="OnlineShopContext">
+        <EntityContainerMapping StorageEntityContainer="OnlineShopModelStoreContainer" CdmEntityContainer="OnlineShopEntities3">
           <EntitySetMapping Name="Categories">
             <EntityTypeMapping TypeName="OnlineShopModel.Category">
               <MappingFragment StoreEntitySet="Categories">
@@ -405,6 +476,7 @@
                 <ScalarProperty Name="Address" ColumnName="Address" />
                 <ScalarProperty Name="City" ColumnName="City" />
                 <ScalarProperty Name="Phone" ColumnName="Phone" />
+                <ScalarProperty Name="OwnerId" ColumnName="OwnerId" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -448,6 +520,15 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="Predicates">
+            <EntityTypeMapping TypeName="OnlineShopModel.Predicate">
+              <MappingFragment StoreEntitySet="Predicates">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="Value" ColumnName="Value" />
+                <ScalarProperty Name="TableName" ColumnName="TableName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="Products">
             <EntityTypeMapping TypeName="OnlineShopModel.Product">
               <MappingFragment StoreEntitySet="Products">
@@ -465,6 +546,14 @@
             </EndProperty>
             <EndProperty Name="Groups">
               <ScalarProperty Name="id" ColumnName="GroupId" />
+            </EndProperty>
+          </AssociationSetMapping>
+          <AssociationSetMapping Name="Policies" TypeName="OnlineShopModel.Policies" StoreEntitySet="Policies">
+            <EndProperty Name="Groups">
+              <ScalarProperty Name="id" ColumnName="GroupId" />
+            </EndProperty>
+            <EndProperty Name="Predicates">
+              <ScalarProperty Name="id" ColumnName="PredicateId" />
             </EndProperty>
           </AssociationSetMapping>
         </EntityContainerMapping>

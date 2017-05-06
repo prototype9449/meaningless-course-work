@@ -18,6 +18,7 @@ namespace WebApplication1
         public Group()
         {
             this.Employees = new HashSet<Employee>();
+            this.Predicates = new HashSet<Predicate>();
         }
     
         public int id { get; set; }
@@ -26,5 +27,7 @@ namespace WebApplication1
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Employee> Employees { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Predicate> Predicates { get; set; }
     }
 }
