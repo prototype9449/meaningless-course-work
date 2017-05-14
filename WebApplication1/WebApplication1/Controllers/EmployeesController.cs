@@ -90,16 +90,16 @@ namespace WebApplication1.Controllers
 
         // DELETE: api/Employees/5
         [ResponseType(typeof(Employee))]
-        public async Task<IHttpActionResult> DeleteEmployee(int id)
+        public IHttpActionResult DeleteEmployee(int id)
         {
-            Employee employee = await db.Employees.FindAsync(id);
+            Employee employee = db.Employees.Find(id);
             if (employee == null)
             {
                 return NotFound();
             }
 
             db.Employees.Remove(employee);
-            await db.SaveChangesAsync();
+            db.SaveChanges();
 
             return Ok(employee);
         }
