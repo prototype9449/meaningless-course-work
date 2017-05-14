@@ -300,7 +300,7 @@ drop ASSEMBLY if exists Parser
 go
 create ASSEMBLY Parser FROM 'C:\Users\Сергей\Documents\Visual Studio 2015\Projects\ClassLibrary1\ClassLibrary1\Parser.dll';  
 GO 
-create FUNCTION getUserAccessClr(@Predicate nvarchar(50)) RETURNS bit  
+create FUNCTION getUserAccessClr(@Predicate nvarchar(4000)) RETURNS bit  
  AS EXTERNAL NAME Parser.ContextParser.ExecutePredicate;   
 GO  
 
