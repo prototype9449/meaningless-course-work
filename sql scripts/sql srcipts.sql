@@ -130,9 +130,9 @@ GO
 CREATE TABLE [dbo].[Products](
 	[id] [int] IDENTITY(1,1) NOT NULL,
 	[Name] [nvarchar](40) NOT NULL,
-	[CategoryId] [int] NULL,
-	[Price] [money] NULL,
-	[Number] [smallint] NULL,
+	[CategoryId] [int] NOT NULL,
+	[Price] [money] NOT NULL,
+	[Number] [smallint] NOT NULL,
  CONSTRAINT [PK_Products] PRIMARY KEY CLUSTERED 
 (
 	[id] ASC

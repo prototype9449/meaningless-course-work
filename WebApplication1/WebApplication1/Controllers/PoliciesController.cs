@@ -52,40 +52,61 @@ namespace WebApplication1.Controllers
             });
         }
 
-        //// PUT: api/Policies/5
-        //[ResponseType(typeof(void))]
-        //public IHttpActionResult PutPolicy(string id, Policy policy)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
+        // PUT: api/Policies/5
+        [ResponseType(typeof(void))]
+        public IHttpActionResult PutPolicy(int id, PolicyModel policyModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-        //    if (id != policy.id)
-        //    {
-        //        return BadRequest();
-        //    }
+            var policy = db.Predicates.Include(x => x.Groups).FirstOrDefault(x => x.id == policyModel.id);
 
-        //    db.Entry(policy).State = EntityState.Modified;
+            if (id != policyModel.id || policy == null)
+            {
+                return BadRequest();
+            }
 
-        //    try
-        //    {
-        //        db.SaveChanges();
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        if (!PolicyExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
+            var oldGroupIds = policy.Groups.Select(x => x.id);
+            var newGroupIds = policyModel.GroupIds.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => int.Parse(x));
 
-        //    return StatusCode(HttpStatusCode.NoContent);
-        //}
+            var groupsIdsToAdd = newGroupIds.Except(oldGroupIds);
+            var groupsIdsToRemove = oldGroupIds.Except(newGroupIds);
+
+            var groupsToAdd = db.Groups.Where(x => groupsIdsToAdd.Contains(x.id));
+            var groupsToRemove = db.Groups.Where(x => groupsIdsToRemove.Contains(x.id));
+
+            foreach (var group in groupsToAdd)
+            {
+                policy.Groups.Add(group);
+            }
+            foreach (var group in groupsToRemove)
+            {
+                policy.Groups.Remove(group);
+            }
+
+            db.Entry(policy).State = EntityState.Modified;
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!PolicyExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return StatusCode(HttpStatusCode.NoContent);
+        }
 
         // POST: api/Policies
         [ResponseType(typeof(PolicyModel))]
@@ -126,21 +147,27 @@ namespace WebApplication1.Controllers
             return CreatedAtRoute("DefaultApi", new { id = predicate.id }, policy);
         }
 
-        //// DELETE: api/Policies/5
-        //[ResponseType(typeof(Policy))]
-        //public IHttpActionResult DeletePolicy(string id)
-        //{
-        //    Policy policy = db.Policies.Find(id);
-        //    if (policy == null)
-        //    {
-        //        return NotFound();
-        //    }
+        // DELETE: api/Policies/5
+        [ResponseType(typeof(PolicyModel))]
+        public IHttpActionResult DeletePolicy(int id)
+        {
+            var predicate = db.Predicates.Find(id);
+            if (predicate == null)
+            {
+                return NotFound();
+            }
 
-        //    db.Policies.Remove(policy);
-        //    db.SaveChanges();
+            db.Predicates.Remove(predicate);
+            db.SaveChanges();
 
-        //    return Ok(policy);
-        //}
+            return Ok(new PolicyModel()
+            {
+                id = predicate.id,
+                PredicateValue = predicate.Value,
+                GroupIds = string.Join(", ", predicate.Groups.ToList()),
+                TableName = predicate.TableName
+            });
+        }
 
         protected override void Dispose(bool disposing)
         {

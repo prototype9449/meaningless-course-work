@@ -63,16 +63,36 @@ namespace WebApplication1.Controllers
 
         // PUT: api/Groups/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult PutGroup(int id, Group group)
+        public IHttpActionResult PutGroup(int id, GroupModel groupModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != group.id)
+            var group = db.Groups.Include(x => x.Employees).FirstOrDefault(x => x.id == groupModel.id);
+
+            if (id != groupModel.id || group == null)
             {
                 return BadRequest();
+            }
+
+            var oldEmployeeIds = group.Employees.Select(x => x.id);
+            var newEmployeeIds = groupModel.EmployeeIds.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => int.Parse(x));
+
+            var employeeIdsToAdd = newEmployeeIds.Except(oldEmployeeIds);
+            var employeeIdsToRemove = oldEmployeeIds.Except(newEmployeeIds);
+
+            var employeesToAdd = db.Employees.Where(x => employeeIdsToAdd.Contains(x.id));
+            var employeesToRemove = db.Employees.Where(x => employeeIdsToRemove.Contains(x.id));
+            foreach(var employee in employeesToAdd)
+            {
+                group.Employees.Add(employee);
+            }
+            foreach(var employee in employeesToRemove)
+            {
+                group.Employees.Remove(employee);
             }
 
             db.Entry(group).State = EntityState.Modified;
@@ -117,6 +137,7 @@ namespace WebApplication1.Controllers
             };
             db.Groups.Add(newGroup);
             db.SaveChanges();
+            groupModel.id = newGroup.id;
 
             return CreatedAtRoute("DefaultApi", new { id = newGroup.id }, groupModel);
         }

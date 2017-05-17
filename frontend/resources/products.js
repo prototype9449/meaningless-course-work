@@ -52,6 +52,7 @@ export const ProductList = ({...props}) => (
           <TextField source="id"/>
           <TextField source="Name" style={titleFieldStyle}/>
           <TextField source="Price" style={{fontStyle: 'italic'}}/>
+          <NumberField source="CategoryId" label="Id of category" style={{fontStyle: 'italic'}}/>
           <EditButton />
           <ShowButton />
         </Datagrid>
@@ -79,6 +80,7 @@ export const ProductCreate = ({...props}) => (
       <TextInput source="Name" validate={required}/>
       <TextInput source="Price" validate={required}/>
       <NumberInput source="Number" validate={required}/>
+      <NumberInput source="CategoryId"/>
     </SimpleForm>
   </Create>
 );
@@ -90,6 +92,7 @@ export const ProductEdit = ({...props}) => (
       <TextInput source="Name" validate={required}/>
       <TextInput source="Price" validate={required}/>
       <NumberInput source="Number" validate={required}/>
+      <NumberInput source="CategoryId"/>
     </SimpleForm>
   </Edit>
 );
@@ -101,7 +104,7 @@ export const ProductShow = ({...props}) => (
       <TextField source="Name"/>
       <TextField source="Price"/>
       <TextField source="Number"/>
-      <TextField label="Category" source="Category.CategoryName"/>
+      <NumberField source="CategoryId" label="Id of category"/>
     </SimpleShowLayout>
   </Show>
 );
