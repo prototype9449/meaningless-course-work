@@ -28,7 +28,7 @@ CREATE TABLE [dbo].[Customers](
 	[Address] [nvarchar](60) NULL,
 	[City] [nvarchar](20) NULL,
 	[Phone] [nvarchar](24) NULL,
-	[OwnerId] nvarchar(128) DEFAULT CAST(SESSION_CONTEXT(N'UserId') AS nvarchar(128)),
+	[OwnerId] int DEFAULT CAST(SESSION_CONTEXT(N'UserId') AS int),
  CONSTRAINT [PK_Customers] PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
@@ -297,12 +297,37 @@ END;
 go
 drop function if exists dbo.securityPredicateOrders
 go
-create FUNCTION dbo.securityPredicateOrders(@employeeID int, @customerID)  
+create FUNCTION dbo.securityPredicateOrders(@employeeID int, @customerID int)  
     RETURNS TABLE 
 	 WITH SCHEMABINDING
 AS  
     RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('Orders',
-    	CONCAT('EmployeeID="', employeeID, '",CustomerId="', customerID, '"')    	
+    	CONCAT('EmployeeID="', @employeeID, '",CustomerId="', @customerID, '"')    	
+    	)) = 1) 
+
+go
+
+drop function if exists dbo.securityPredicateEmployees
+go
+create FUNCTION dbo.securityPredicateEmployees(@FullName nvarchar(150), @City nvarchar(20), @Phone nvarchar(24))  
+    RETURNS TABLE 
+	 WITH SCHEMABINDING
+AS  
+    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('Employees',
+    	CONCAT('FullName="', @FullName, '",City="', @City, '", Phone="', @Phone,'"')    	
+    	)) = 1) 
+
+go
+
+drop function if exists dbo.securityPredicateCustomers
+go
+create FUNCTION dbo.securityPredicateCustomers(
+@FullName nvarchar(50), @CompanyName nvarchar(40), @Address nvarchar(60), @City nvarchar(20), @Phone nvarchar(24), @OwnerId nvarchar(128))  
+    RETURNS TABLE 
+	 WITH SCHEMABINDING
+AS  
+    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('Customers',
+    	CONCAT('FullName="', @FullName, '",CompanyName="', @CompanyName, '",Address="', @Address, '",City="', @City, '", Phone="', @Phone,'", OwnerId="', @OwnerId, '"')    	
     	)) = 1) 
 
 go
@@ -311,4 +336,16 @@ drop security policy if exists dbo.[OrdersPolicy]
 create SECURITY POLICY dbo.[OrdersPolicy]   
 ADD FILTER PREDICATE dbo.securityPredicateOrders(EmployeeID, CustomerId)   
     ON [dbo].[Orders]
-WITH (STATE = ON);   
+WITH (STATE = ON); 
+
+drop security policy if exists dbo.[EmployeesPolicy]   
+create SECURITY POLICY dbo.[EmployeesPolicy]   
+ADD FILTER PREDICATE dbo.securityPredicateEmployees(FullName, City, Phone)   
+    ON [dbo].[Employees]
+WITH (STATE = ON); 
+
+drop security policy if exists dbo.[CustomersPolicy]   
+create SECURITY POLICY dbo.[CustomersPolicy]   
+ADD FILTER PREDICATE dbo.securityPredicateCustomers(FullName, CompanyName, Address, City, Phone, OwnerId)   
+    ON [dbo].[Customers]
+WITH (STATE = ON); 

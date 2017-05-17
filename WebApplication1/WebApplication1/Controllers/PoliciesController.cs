@@ -87,6 +87,9 @@ namespace WebApplication1.Controllers
                 policy.Groups.Remove(group);
             }
 
+            policy.TableName = policyModel.TableName;
+            policy.Value = policyModel.PredicateValue;
+
             db.Entry(policy).State = EntityState.Modified;
 
             try
