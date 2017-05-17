@@ -269,7 +269,7 @@ GO
 
 drop function if exists dbo.getUserAccess
 go
-CREATE FUNCTION dbo.getUserAccess(@TableName nvarchar(50))  
+CREATE FUNCTION dbo.getUserAccess(@TableName nvarchar(200), @RowValue nvarchar(4000))  
 RETURNS bit
  WITH SCHEMABINDING   
 AS   
@@ -290,23 +290,25 @@ BEGIN
 	  end
 	else
 	  begin
-	    select @result = dbo.getUserAccessClr(@predicates)
+	    select @result = dbo.getUserAccessClr(@predicates, @RowValue)
 	  end
 	  return @result	
 END;
 go
 drop function if exists dbo.securityPredicateOrders
 go
-create FUNCTION dbo.securityPredicateOrders(@emId int)  
+create FUNCTION dbo.securityPredicateOrders(@employeeID int, @customerID)  
     RETURNS TABLE 
 	 WITH SCHEMABINDING
 AS  
-    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('Orders')) = 1) 
+    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('Orders',
+    	CONCAT('EmployeeID="', employeeID, '",CustomerId="', customerID, '"')    	
+    	)) = 1) 
 
 go
 
 drop security policy if exists dbo.[OrdersPolicy]   
 create SECURITY POLICY dbo.[OrdersPolicy]   
-ADD FILTER PREDICATE dbo.securityPredicateOrders(EmployeeId)   
+ADD FILTER PREDICATE dbo.securityPredicateOrders(EmployeeID, CustomerId)   
     ON [dbo].[Orders]
 WITH (STATE = ON);   

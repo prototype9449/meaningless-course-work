@@ -3,3 +3,8 @@ c:\users\сергей\documents\visual studio 2015\Projects\ClassLibrary1\ClassL
 c:\users\сергей\documents\visual studio 2015\Projects\ClassLibrary1\ClassLibrary1\obj\Debug\ClassLibrary1.csprojResolveAssemblyReference.cache
 c:\users\сергей\documents\visual studio 2015\Projects\ClassLibrary1\ClassLibrary1\obj\Debug\ClassLibrary1.dll
 c:\users\сергей\documents\visual studio 2015\Projects\ClassLibrary1\ClassLibrary1\obj\Debug\ClassLibrary1.pdb
+C:\repositories\security-policy\ClassLibrary1\ClassLibrary1\bin\Debug\ClassLibrary1.dll
+C:\repositories\security-policy\ClassLibrary1\ClassLibrary1\bin\Debug\ClassLibrary1.pdb
+C:\repositories\security-policy\ClassLibrary1\ClassLibrary1\obj\Debug\ClassLibrary1.csprojResolveAssemblyReference.cache
+C:\repositories\security-policy\ClassLibrary1\ClassLibrary1\obj\Debug\ClassLibrary1.dll
+C:\repositories\security-policy\ClassLibrary1\ClassLibrary1\obj\Debug\ClassLibrary1.pdb
