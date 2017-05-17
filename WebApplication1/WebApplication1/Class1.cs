@@ -137,4 +137,12 @@ namespace WebApplication1
         public string PredicateValue { get; set; }
         public string TableName { get; set; }
     }
+
+    public class GroupModel
+    {
+        public int id { get; set; }
+        public string EmployeeIds{ get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+    }
 }

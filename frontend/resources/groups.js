@@ -65,6 +65,7 @@ export const GroupList = ({...props}) => (
           <TextField source="id"/>
           <TextField source="Name" style={titleFieldStyle}/>
           <TextField source="Description" style={{fontStyle: 'italic'}}/>
+          <TextField source="EmployeeIds" label="Identifiers of employees" />
           <EditButton />
           <ShowButton />
         </Datagrid>
@@ -91,6 +92,7 @@ export const GroupCreate = ({...props}) => (
     }}>
       <TextInput source="Name"/>
       <LongTextInput source="Description" options={{multiLine: true}}/>
+      <TextInput source="EmployeeIds" label="Identifiers of employees" />
     </SimpleForm>
   </Create>
 );
@@ -101,6 +103,7 @@ export const GroupEdit = ({...props}) => (
       <DisabledInput source="id"/>
       <TextInput source="Name" validate={required}/>
       <LongTextInput source="Description" validate={required}/>
+      <TextInput source="EmployeeIds" label="Identifiers of employees" />
     </SimpleForm>
   </Edit>
 );
@@ -111,14 +114,7 @@ export const GroupShow = ({...props}) => (
       <TextField source="id"/>
       <TextField source="Name"/>
       <TextField source="Description"/>
-      <ReferenceManyField label="Employees" reference="employees" target="EmployeeId">
-        <Datagrid selectable={false}>
-          <TextField source="FullName"/>
-          <TextField source="Phone"/>
-          <TextField source="City"/>
-          <ShowButton/>
-        </Datagrid>
-      </ReferenceManyField>
+      <TextField source="EmployeeIds" label="Identifiers of employees" />
     </SimpleShowLayout>
   </Show>
 );

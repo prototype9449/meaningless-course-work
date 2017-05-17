@@ -18,28 +18,47 @@ namespace WebApplication1.Controllers
     {
         private OnlineShopContext db = new OnlineShopContext();
 
+        private IEnumerable<GroupModel> MapToList(IQueryable<Group> groups)
+        {
+            return groups.ToList().Select(x =>
+                new GroupModel()
+                {
+                    id = x.id,
+                    Name = x.Name,
+                    EmployeeIds = string.Join(", ", x.Employees.ToList().Select(y => y.id)),
+                    Description = x.Description
+                });
+        }
+
         // GET: api/Groups
-        public IQueryable<Group> GetGroups(int EmployeeId = -1)
+        public IEnumerable<GroupModel> GetGroups(int EmployeeId = -1)
         {
             if (EmployeeId == -1)
             {
-                return db.Groups;
+                return MapToList(db.Groups);
             }
 
-            return db.Groups.Include(x => x.Employees).Where(x => x.Employees.Count(y => y.id == EmployeeId) != 0);
+            return MapToList(db.Groups.Include(x => x.Employees)
+                .Where(x => x.Employees.Count(y => y.id == EmployeeId) != 0));
         }
 
         // GET: api/Groups/5
-        [ResponseType(typeof(Group))]
+        [ResponseType(typeof(GroupModel))]
         public IHttpActionResult GetGroup(int id)
         {
-            Group group = db.Groups.Find(id);
+            Group group = db.Groups.Include(x => x.Employees).FirstOrDefault(x => x.id == id);
             if (group == null)
             {
                 return NotFound();
             }
 
-            return Ok(group);
+            return Ok(new GroupModel()
+            {
+                id = group.id,
+                Name = group.Name,
+                EmployeeIds = string.Join(", ", group.Employees.ToList().Select(y => y.id)),
+                Description = group.Description
+            });
         }
 
         // PUT: api/Groups/5
@@ -78,22 +97,32 @@ namespace WebApplication1.Controllers
         }
 
         // POST: api/Groups
-        [ResponseType(typeof(Group))]
-        public IHttpActionResult PostGroup(Group group)
+        [ResponseType(typeof(GroupModel))]
+        public IHttpActionResult PostGroup(GroupModel groupModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            db.Groups.Add(group);
+            var employeeIds = groupModel.EmployeeIds.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => int.Parse(x));
+            var employees = db.Employees.Where(x => employeeIds.Contains(x.id)).ToList();
+
+            var newGroup = new Group()
+            {
+                Name = groupModel.Name,
+                Description = groupModel.Description,
+                Employees = employees
+            };
+            db.Groups.Add(newGroup);
             db.SaveChanges();
 
-            return CreatedAtRoute("DefaultApi", new { id = group.id }, group);
+            return CreatedAtRoute("DefaultApi", new { id = newGroup.id }, groupModel);
         }
 
         // DELETE: api/Groups/5
-        [ResponseType(typeof(Group))]
+        [ResponseType(typeof(GroupModel))]
         public IHttpActionResult DeleteGroup(int id)
         {
             Group group = db.Groups.Find(id);
@@ -105,7 +134,13 @@ namespace WebApplication1.Controllers
             db.Groups.Remove(group);
             db.SaveChanges();
 
-            return Ok(group);
+            return Ok(new GroupModel()
+            {
+                id = group.id,
+                Name = group.Name,
+                EmployeeIds = string.Join(", ", group.Employees.ToList().Select(y => y.id)),
+                Description = group.Description
+            });
         }
 
         protected override void Dispose(bool disposing)
