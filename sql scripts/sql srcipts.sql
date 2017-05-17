@@ -111,6 +111,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[Orders](
 	[id] [int] IDENTITY(1,1) NOT NULL,
+	[Description] nvarchar(300),
 	[CustomerID] [int] NOT NULL,
 	[EmployeeID] [int] NOT NULL,
 	[OrderDate] [datetime] NULL,
@@ -165,14 +166,14 @@ CREATE TABLE [dbo].[Predicates](
 GO
 
 ALTER TABLE [dbo].[Policies]  WITH CHECK ADD  CONSTRAINT [FK_Policies_Groups] FOREIGN KEY([GroupId])
-REFERENCES [dbo].[Groups] ([id])
+REFERENCES [dbo].[Groups] ([id]) ON DELETE CASCADE
 GO
 
 ALTER TABLE [dbo].[Policies] CHECK CONSTRAINT [FK_Policies_Groups]
 GO
 
 ALTER TABLE [dbo].[Policies]  WITH CHECK ADD  CONSTRAINT [FK_Policies_Predicates] FOREIGN KEY([PredicateId])
-REFERENCES [dbo].[Predicates] ([id])
+REFERENCES [dbo].[Predicates] ([id]) ON DELETE CASCADE
 GO
 
 ALTER TABLE [dbo].[Policies] CHECK CONSTRAINT [FK_Policies_Predicates]
@@ -186,37 +187,37 @@ GO
 ALTER TABLE [dbo].[Products] ADD  CONSTRAINT [DF_Products_UnitsInStock]  DEFAULT ((0)) FOR [Number]
 GO
 ALTER TABLE [dbo].[EmployeeGroups]  WITH NOCHECK ADD  CONSTRAINT [FK_EmployeeId1_Employees] FOREIGN KEY([EmployeeId])
-REFERENCES [dbo].[Employees] ([id])
+REFERENCES [dbo].[Employees] ([id]) ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[EmployeeGroups] CHECK CONSTRAINT [FK_EmployeeId1_Employees]
 GO
 ALTER TABLE [dbo].[EmployeeGroups]  WITH NOCHECK ADD  CONSTRAINT [FK_GroupId_Groups] FOREIGN KEY([GroupId])
-REFERENCES [dbo].[Groups] ([id])
+REFERENCES [dbo].[Groups] ([id]) ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[EmployeeGroups] CHECK CONSTRAINT [FK_GroupId_Groups]
 GO
 ALTER TABLE [dbo].[OrderDetails]  WITH NOCHECK ADD  CONSTRAINT [FK_Order_Details_Orders] FOREIGN KEY([OrderId])
-REFERENCES [dbo].[Orders] ([id])
+REFERENCES [dbo].[Orders] ([id]) ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[OrderDetails] CHECK CONSTRAINT [FK_Order_Details_Orders]
 GO
 ALTER TABLE [dbo].[OrderDetails]  WITH NOCHECK ADD  CONSTRAINT [FK_Order_Details_Products] FOREIGN KEY([ProductID])
-REFERENCES [dbo].[Products] ([id])
+REFERENCES [dbo].[Products] ([id]) ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[OrderDetails] CHECK CONSTRAINT [FK_Order_Details_Products]
 GO
 ALTER TABLE [dbo].[Orders]  WITH NOCHECK ADD  CONSTRAINT [FK_EmployeeId_Employees] FOREIGN KEY([EmployeeID])
-REFERENCES [dbo].[Employees] ([id])
+REFERENCES [dbo].[Employees] ([id]) ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[Orders] CHECK CONSTRAINT [FK_EmployeeId_Employees]
 GO
 ALTER TABLE [dbo].[Orders]  WITH NOCHECK ADD  CONSTRAINT [FK_Orders_Customers] FOREIGN KEY([CustomerID])
-REFERENCES [dbo].[Customers] ([id])
+REFERENCES [dbo].[Customers] ([id]) ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[Orders] CHECK CONSTRAINT [FK_Orders_Customers]
 GO
 ALTER TABLE [dbo].[Products]  WITH NOCHECK ADD  CONSTRAINT [FK_Products_Categories] FOREIGN KEY([CategoryId])
-REFERENCES [dbo].[Categories] ([id])
+REFERENCES [dbo].[Categories] ([id]) ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[Products] CHECK CONSTRAINT [FK_Products_Categories]
 GO
@@ -252,33 +253,33 @@ AS
 	EXEC sp_set_session_context 'Phone', @Phone;  
 GO   
 
-drop function if exists [Security].getUserAccessClr
-drop ASSEMBLY if exists Parser
-create ASSEMBLY Parser FROM 'C:\Users\Сергей\Documents\Visual Studio 2015\Projects\ClassLibrary1\ClassLibrary1\Parser.dll';  
-GO 
-create FUNCTION [Security].getUserAccessClr(@Predicate nvarchar(50)) RETURNS bit  
- AS EXTERNAL NAME Parser.ContextParser.ExecutePredicate;   
-GO  
-
-CREATE FUNCTION [Security].getUserAccess(@TableName nvarchar(50))  
-RETURNS bit   
-AS   
+EXEC sp_configure 'clr enabled', 1  
+RECONFIGURE; 
 
 
-drop function if exists getUserAccess
+drop function if exists getUserAccessClr
 go
-CREATE FUNCTION getUserAccess(@TableName nvarchar(50))  
+drop ASSEMBLY if exists Parser
+go
+create ASSEMBLY Parser FROM 'C:\repositories\security-policy\ClassLibrary1\ClassLibrary1\ClassLibrary1\Parser.dll';  
+GO 
+create FUNCTION dbo.getUserAccessClr(@Predicate nvarchar(4000)) RETURNS bit  
+ AS EXTERNAL NAME Parser.ContextParser.ExecutePredicate;   
+GO 
+
+drop function if exists dbo.getUserAccess
+go
+CREATE FUNCTION dbo.getUserAccess(@TableName nvarchar(50))  
 RETURNS bit
  WITH SCHEMABINDING   
 AS   
--- Returns the stock level for the product.  
 BEGIN
  DECLARE @predicates nvarchar(4000);
  Declare @result bit;
  select @predicates = COALESCE(@predicates + ',', '') + dbo.Predicates.Value from 
 	 dbo.Predicates join  dbo.Policies 
 	on  dbo.Predicates.id =  dbo.Policies.PredicateId 
-	and  dbo.Policies.TableName = @TableName
+	and  dbo.Predicates.TableName = @TableName
 	join  dbo.EmployeeGroups 
 	on  dbo.EmployeeGroups.GroupId =  dbo.Policies.GroupId
 	and  dbo.EmployeeGroups.EmployeeId = CAST(SESSION_CONTEXT(N'UserId') AS int);
@@ -293,26 +294,18 @@ BEGIN
 	  end
 	  return @result	
 END;
-
-drop function if exists getUserAccessClr
 go
-drop ASSEMBLY if exists Parser
+drop function if exists dbo.securityPredicateOrders
 go
-create ASSEMBLY Parser FROM 'C:\Users\Сергей\Documents\Visual Studio 2015\Projects\ClassLibrary1\ClassLibrary1\Parser.dll';  
-GO 
-create FUNCTION getUserAccessClr(@Predicate nvarchar(4000)) RETURNS bit  
- AS EXTERNAL NAME Parser.ContextParser.ExecutePredicate;   
-GO  
-
-drop function if exists [securityPredicate]
-go
-create FUNCTION securityPredicateOrders(@emId int)  
+create FUNCTION dbo.securityPredicateOrders(@emId int)  
     RETURNS TABLE 
 	 WITH SCHEMABINDING
 AS  
     RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('Orders')) = 1) 
 
 go
+
+drop security policy if exists dbo.[OrdersPolicy]   
 create SECURITY POLICY dbo.[OrdersPolicy]   
 ADD FILTER PREDICATE dbo.securityPredicateOrders(EmployeeId)   
     ON [dbo].[Orders]

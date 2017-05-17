@@ -204,12 +204,6 @@ export class List extends Component {
                                 isLoading,
                                 setSort: this.setSort,
                             })}
-                            { pagination && React.cloneElement(pagination, {
-                                total,
-                                page: parseInt(query.page, 10),
-                                perPage: parseInt(query.perPage, 10),
-                                setPage: this.setPage,
-                            }) }
                         </div>
                         :
                         <CardText style={styles.noResults}>{translate('aor.navigation.no_results')}</CardText>

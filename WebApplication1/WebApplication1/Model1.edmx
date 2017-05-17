@@ -23,7 +23,7 @@
           <Property Name="Address" Type="nvarchar" MaxLength="60" />
           <Property Name="City" Type="nvarchar" MaxLength="20" />
           <Property Name="Phone" Type="nvarchar" MaxLength="24" />
-          <Property Name="OwnerId" Type="int" />
+          <Property Name="OwnerId" Type="nvarchar" MaxLength="128" StoreGeneratedPattern="Computed" />
         </EntityType>
         <EntityType Name="EmployeeGroups">
           <Key>
@@ -66,6 +66,7 @@
             <PropertyRef Name="id" />
           </Key>
           <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Description" Type="nvarchar" MaxLength="300" />
           <Property Name="CustomerID" Type="int" Nullable="false" />
           <Property Name="EmployeeID" Type="int" Nullable="false" />
           <Property Name="OrderDate" Type="datetime" />
@@ -84,7 +85,7 @@
           </Key>
           <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Value" Type="nvarchar" MaxLength="200" Nullable="false" />
-          <Property Name="TableName" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="TableName" Type="nvarchar" MaxLength="100" Nullable="false" />
         </EntityType>
         <EntityType Name="Products">
           <Key>
@@ -97,7 +98,9 @@
           <Property Name="Number" Type="smallint" />
         </EntityType>
         <Association Name="FK_EmployeeId_Employees">
-          <End Role="Employees" Type="Self.Employees" Multiplicity="1" />
+          <End Role="Employees" Type="Self.Employees" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="Orders" Type="Self.Orders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Employees">
@@ -109,7 +112,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_EmployeeId1_Employees">
-          <End Role="Employees" Type="Self.Employees" Multiplicity="1" />
+          <End Role="Employees" Type="Self.Employees" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="EmployeeGroups" Type="Self.EmployeeGroups" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Employees">
@@ -121,7 +126,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_GroupId_Groups">
-          <End Role="Groups" Type="Self.Groups" Multiplicity="1" />
+          <End Role="Groups" Type="Self.Groups" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="EmployeeGroups" Type="Self.EmployeeGroups" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Groups">
@@ -133,7 +140,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_Order_Details_Orders">
-          <End Role="Orders" Type="Self.Orders" Multiplicity="1" />
+          <End Role="Orders" Type="Self.Orders" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="OrderDetails" Type="Self.OrderDetails" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Orders">
@@ -145,7 +154,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_Order_Details_Products">
-          <End Role="Products" Type="Self.Products" Multiplicity="1" />
+          <End Role="Products" Type="Self.Products" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="OrderDetails" Type="Self.OrderDetails" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Products">
@@ -157,7 +168,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_Orders_Customers">
-          <End Role="Customers" Type="Self.Customers" Multiplicity="1" />
+          <End Role="Customers" Type="Self.Customers" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="Orders" Type="Self.Orders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Customers">
@@ -169,7 +182,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_Policies_Groups">
-          <End Role="Groups" Type="Self.Groups" Multiplicity="1" />
+          <End Role="Groups" Type="Self.Groups" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="Policies" Type="Self.Policies" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Groups">
@@ -181,7 +196,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_Policies_Predicates">
-          <End Role="Predicates" Type="Self.Predicates" Multiplicity="1" />
+          <End Role="Predicates" Type="Self.Predicates" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="Policies" Type="Self.Policies" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Predicates">
@@ -193,7 +210,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_Products_Categories">
-          <End Role="Categories" Type="Self.Categories" Multiplicity="0..1" />
+          <End Role="Categories" Type="Self.Categories" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="Products" Type="Self.Products" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Categories">
@@ -276,7 +295,7 @@
           <Property Name="Address" Type="String" MaxLength="60" FixedLength="false" Unicode="true" />
           <Property Name="City" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
           <Property Name="Phone" Type="String" MaxLength="24" FixedLength="false" Unicode="true" />
-          <Property Name="OwnerId" Type="Int32" />
+          <Property Name="OwnerId" Type="String" MaxLength="128" FixedLength="false" Unicode="true" annotation:StoreGeneratedPattern="Computed" />
           <NavigationProperty Name="Orders" Relationship="Self.FK_Orders_Customers" FromRole="Customers" ToRole="Orders" />
         </EntityType>
         <EntityType Name="Employee">
@@ -318,6 +337,7 @@
             <PropertyRef Name="id" />
           </Key>
           <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Description" Type="String" MaxLength="300" FixedLength="false" Unicode="true" />
           <Property Name="CustomerID" Type="Int32" Nullable="false" />
           <Property Name="EmployeeID" Type="Int32" Nullable="false" />
           <Property Name="OrderDate" Type="DateTime" Precision="3" />
@@ -331,7 +351,7 @@
           </Key>
           <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Value" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="TableName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="TableName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
           <NavigationProperty Name="Groups" Relationship="Self.Policies" FromRole="Predicates" ToRole="Groups" />
         </EntityType>
         <EntityType Name="Product">
@@ -347,7 +367,9 @@
           <NavigationProperty Name="OrderDetails" Relationship="Self.FK_Order_Details_Products" FromRole="Products" ToRole="OrderDetails" />
         </EntityType>
         <Association Name="FK_Products_Categories">
-          <End Role="Categories" Type="Self.Category" Multiplicity="0..1" />
+          <End Role="Categories" Type="Self.Category" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="Products" Type="Self.Product" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Categories">
@@ -359,7 +381,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_Orders_Customers">
-          <End Role="Customers" Type="Self.Customer" Multiplicity="1" />
+          <End Role="Customers" Type="Self.Customer" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="Orders" Type="Self.Order" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Customers">
@@ -371,7 +395,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_EmployeeId_Employees">
-          <End Role="Employees" Type="Self.Employee" Multiplicity="1" />
+          <End Role="Employees" Type="Self.Employee" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="Orders" Type="Self.Order" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Employees">
@@ -383,7 +409,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_Order_Details_Orders">
-          <End Role="Orders" Type="Self.Order" Multiplicity="1" />
+          <End Role="Orders" Type="Self.Order" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="OrderDetails" Type="Self.OrderDetail" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Orders">
@@ -395,7 +423,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_Order_Details_Products">
-          <End Role="Products" Type="Self.Product" Multiplicity="1" />
+          <End Role="Products" Type="Self.Product" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="OrderDetails" Type="Self.OrderDetail" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Products">
@@ -414,7 +444,7 @@
           <End Role="Groups" Type="Self.Group" Multiplicity="*" />
           <End Role="Predicates" Type="Self.Predicate" Multiplicity="*" />
         </Association>
-        <EntityContainer Name="OnlineShopEntities3" annotation:LazyLoadingEnabled="true">
+        <EntityContainer Name="OnlineShopEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Categories" EntityType="Self.Category" />
           <EntitySet Name="Customers" EntityType="Self.Customer" />
           <EntitySet Name="Employees" EntityType="Self.Employee" />
@@ -457,7 +487,7 @@
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="OnlineShopModelStoreContainer" CdmEntityContainer="OnlineShopEntities3">
+        <EntityContainerMapping StorageEntityContainer="OnlineShopModelStoreContainer" CdmEntityContainer="OnlineShopEntities">
           <EntitySetMapping Name="Categories">
             <EntityTypeMapping TypeName="OnlineShopModel.Category">
               <MappingFragment StoreEntitySet="Categories">
@@ -514,6 +544,7 @@
             <EntityTypeMapping TypeName="OnlineShopModel.Order">
               <MappingFragment StoreEntitySet="Orders">
                 <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
                 <ScalarProperty Name="CustomerID" ColumnName="CustomerID" />
                 <ScalarProperty Name="EmployeeID" ColumnName="EmployeeID" />
                 <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />

@@ -16,9 +16,8 @@ namespace WebApplication1
     public partial class OnlineShopContext : DbContext
     {
         public OnlineShopContext()
-            : base("name=OnlineShopEntities3")
+            : base("name=OnlineShopEntities")
         {
-            this.Configuration.LazyLoadingEnabled = false;
         }
     
         protected override void OnModelCreating(DbModelBuilder modelBuilder)

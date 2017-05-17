@@ -21,6 +21,7 @@ namespace WebApplication1
         }
     
         public int id { get; set; }
+        public string Description { get; set; }
         public int CustomerID { get; set; }
         public int EmployeeID { get; set; }
         public Nullable<System.DateTime> OrderDate { get; set; }
