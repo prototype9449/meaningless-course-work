@@ -1,5 +1,0 @@
-E:\Projects\DynamicDict\bin\Debug\DynamicDict.dll
-E:\Projects\DynamicDict\bin\Debug\DynamicDict.pdb
-E:\Projects\DynamicDict\obj\Debug\DynamicDict.csprojResolveAssemblyReference.cache
-E:\Projects\DynamicDict\obj\Debug\DynamicDict.dll
-E:\Projects\DynamicDict\obj\Debug\DynamicDict.pdb
