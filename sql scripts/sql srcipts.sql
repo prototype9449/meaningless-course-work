@@ -155,6 +155,7 @@ GO
 CREATE TABLE [dbo].[Predicates](
 	[id] [int] IDENTITY(1,1) NOT NULL,
 	[Value] [nvarchar](200) NOT NULL,
+	[Assembly] [varbinary(max)] NOT NULL,
 	[TableName] [nvarchar](100) not null,
  CONSTRAINT [PK_Predicates] PRIMARY KEY CLUSTERED 
 (
@@ -239,6 +240,29 @@ ALTER TABLE [dbo].[Products] CHECK CONSTRAINT [CK_UnitsInStock]
 GO
 
 
+var t = {
+	"PrimaryTable": "Employees",
+	"PrimaryKeys": [
+	   "FirstName",
+	   "LastName"
+	],
+	"Tables": [
+		{
+			"Name": "another table",
+			"ForeignKeys": [
+				{
+					"ForeignKey": "LName",
+					"To": "LastNameName",
+				},
+				{
+					"ForeignKey": "FName",
+					"To": "FirstName",
+				}
+			]			
+		}
+	]
+}
+
 create PROCEDURE setInitialContext(   
     @UserId int)
 AS
@@ -247,7 +271,7 @@ AS
 	declare @City nvarchar(20);
 	declare @Phone nvarchar(24);
     select @FullName = FullName, @City = City, @Phone = Phone from Employees where id = @UserId
-	EXEC sp_set_session_context 'FullName', @FullName;  
+	EXEC sp_set_session_context 'Table', @Employees;  
 	EXEC sp_set_session_context 'UserId', @UserId; 
 	EXEC sp_set_session_context 'City', @City;  
 	EXEC sp_set_session_context 'Phone', @Phone;  

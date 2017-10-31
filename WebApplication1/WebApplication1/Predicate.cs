@@ -23,6 +23,7 @@ namespace WebApplication1
         public int id { get; set; }
         public string Value { get; set; }
         public string TableName { get; set; }
+        public byte[] Assembly { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Group> Groups { get; set; }
