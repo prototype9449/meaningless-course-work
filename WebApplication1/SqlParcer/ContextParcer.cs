@@ -8,7 +8,7 @@ using Microsoft.SqlServer.Server;
 
 namespace SqlParcer
 {
-    public class ContextParcer
+    public static class ContextParcer
     {
         public class Tuple
         {
@@ -19,19 +19,49 @@ namespace SqlParcer
             }
             public string Variable { get; set; }
             public string Value { get; set; }
+        }       
+
+        private static List<Tuple> GetIdentifiers(string identifierRow)
+        {
+            var keyValues = identifierRow.Split(new[] { ',', ' ', '[', ']', '=' }, StringSplitOptions.RemoveEmptyEntries);
+            if(keyValues.Length % 2 != 0)
+            {
+                throw new Exception("should not be odd");
+            }
+            var result = new List<Tuple>();
+
+            for (var i = 0; i < keyValues.Length; i+=2)
+            {
+                result.Add(new Tuple(keyValues[i], keyValues[i + 1]));
+            }
+            return result;
         }
 
-        [SqlFunction(DataAccess = DataAccessKind.Read)]
-        public static bool ExecutePredicate(string expression, string rowValue)
+        private static List<Tuple> GetPredicates(string expressions)
         {
-            var predicates = expression.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var predicates = expressions.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             var predicateTuples = new List<Tuple>();
             foreach (var pred in predicates)
             {
                 var values = pred.Split(new[] { '=', ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 predicateTuples.Add(new Tuple(values[0], values[1]));
             }
-            var rowValues = rowValue.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+            return predicateTuples;
+        }
+
+        [SqlFunction(DataAccess = DataAccessKind.Read)]
+        public static bool ExecutePredicate(string schema, string tableName, string expressions, string rowIdentfierKeys)
+        {
+            //1) parse expressions into separate predicates
+            //2) parse each predicate to know what columns from context row are used and columns from current row
+            //3) make 2 request - for current row, for context row
+            //4) take data and 
+
+            var predicateTuples = GetPredicates(expressions);
+            var identifiers = GetIdentifiers(rowIdentfierKeys);
+
+            var rowValues = rowKeys.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             var rowTuples = new List<Tuple>();
             foreach (var value in rowValues)
             {
@@ -70,14 +100,7 @@ namespace SqlParcer
                     }
                 }
             }
-
-            dynamic first = new DynamicDictionary();
-            dynamic second = new DynamicDictionary();
-            first.SetValue("name1", "121212");
-            second.SetValue("name2", "1331231");
-
-            //return ExecuteExpression(expression, first, second)
-
+            
             foreach (var keyValue in predicateTuples)
             {
                 var key = "";

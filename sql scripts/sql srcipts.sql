@@ -293,30 +293,20 @@ GO
 
 drop function if exists dbo.getUserAccess
 go
-CREATE FUNCTION dbo.getUserAccess(@TableName nvarchar(200), @RowValue nvarchar(4000))  
+CREATE FUNCTION dbo.getUserAccess(@TableName nvarchar(200), @Columns nvarchar(4000), @PredicateIds nvarchar(max))  
 RETURNS bit
- WITH SCHEMABINDING   
 AS   
 BEGIN
- DECLARE @predicates nvarchar(4000);
  Declare @result bit;
- select @predicates = COALESCE(@predicates + ',', '') + dbo.Predicates.Value from 
-	 dbo.Predicates join  dbo.Policies 
-	on  dbo.Predicates.id =  dbo.Policies.PredicateId 
-	and  dbo.Predicates.TableName = @TableName
-	join  dbo.EmployeeGroups 
-	on  dbo.EmployeeGroups.GroupId =  dbo.Policies.GroupId
-	and  dbo.EmployeeGroups.EmployeeId = CAST(SESSION_CONTEXT(N'UserId') AS int);
-
-	if @predicates is Null
-	  begin
-	    set @result = 1
-	  end
-	else
-	  begin
-	    select @result = dbo.getUserAccessClr(@predicates, @RowValue)
-	  end
-	  return @result	
+   if @predicatesIds is Null
+     begin
+       set @result = 1
+     end
+   else
+     begin
+       select @result = dbo.getUserAccessClr(@predicatesIds, @RowValue)
+     end
+  return @result	
 END;
 go
 drop function if exists dbo.securityPredicateOrders
@@ -330,6 +320,81 @@ AS
     	)) = 1) 
 
 go
+
+CREATE FUNCTION dbo.getColumnsAsString(@TABLE_NAME nvarchar(200), @SCHEMA_NAME nvarchar(128))  
+RETURNS nvarchar(max)
+AS   
+BEGIN
+ DECLARE @vvc_ColumnName nvarchar(128)
+ DECLARE @vvc_ColumnList nvarchar(MAX)
+
+IF @SCHEMA_NAME =''
+  BEGIN
+	return ''
+  END
+ 
+IF NOT EXISTS (SELECT T.name, s.name FROM sys.tables T JOIN sys.schemas S
+          ON T.schema_id=S.schema_id
+          WHERE T.name=@TABLE_NAME AND s.name =@SCHEMA_NAME)
+  BEGIN
+	return ''
+  END
+ 
+DECLARE TableCursor CURSOR FAST_FORWARD FOR
+SELECT   CASE WHEN PATINDEX('% %',C.name) > 0 
+         THEN '['+ C.name +']' 
+         ELSE C.name 
+         END
+FROM     sys.columns C
+JOIN     sys.tables T
+ON       C.object_id  = T.object_id
+JOIN     sys.schemas S
+ON       S.schema_id  = T.schema_id
+WHERE    T.name    = @TABLE_NAME
+AND      S.name    = @SCHEMA_NAME
+ORDER BY column_id
+
+SET @vvc_ColumnList=''
+ 
+OPEN TableCursor
+FETCH NEXT FROM TableCursor INTO @vvc_ColumnName
+
+WHILE @@FETCH_STATUS=0
+  BEGIN
+  SET @vvc_ColumnList = @vvc_ColumnList + @vvc_ColumnName
+
+  -- get the details of the next column
+  FETCH NEXT FROM TableCursor INTO @vvc_ColumnName
+
+  -- add a comma if we are not at the end of the row
+  IF @@FETCH_STATUS=0
+    SET @vvc_ColumnList = @vvc_ColumnList + ','
+  END
+
+CLOSE TableCursor
+DEALLOCATE TableCursor
+
+return @vvc_ColumnList
+END;
+print dbo.getColumnsAsString('Employees', 'dbo')
+
+
+CREATE FUNCTION dbo.getUserPredicateIds(@TableName nvarchar(200))  
+RETURNS nvarchar(max)
+AS   
+BEGIN
+ DECLARE @predicatesIds nvarchar(4000);
+ select @predicatesIds = COALESCE(@predicatesIds + ',', '') + dbo.Predicates.id from 
+	 dbo.Predicates join  dbo.Policies 
+	on  dbo.Predicates.id =  dbo.Policies.PredicateId 
+	and  dbo.Predicates.TableName = @TableName
+	join  dbo.EmployeeGroups 
+	on  dbo.EmployeeGroups.GroupId =  dbo.Policies.GroupId
+	and  dbo.EmployeeGroups.EmployeeId = CAST(SESSION_CONTEXT(N'UserId') AS int);
+
+	
+	  return @predicatesIds	
+END;
 
 drop function if exists dbo.securityPredicateEmployees
 go
@@ -350,9 +415,11 @@ create FUNCTION dbo.securityPredicateCustomers(
     RETURNS TABLE 
 	 WITH SCHEMABINDING
 AS  
-    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('Customers',
-    	CONCAT('FullName="', @FullName, '",CompanyName="', @CompanyName, '",Address="', @Address, '",City="', @City, '", Phone="', @Phone,'", OwnerId="', @OwnerId, '"')    	
-    	)) = 1) 
+    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess(
+    	'Customers', 
+    	dbo.getColumnsAsString('Customers', 'dbo'), 
+    	dbo.getUserPredicateIds('Customers'), 
+    	@FullName, @CompanyName, @Address, @City, @Phone, @OwnerId))) = 1) 
 
 go
 
