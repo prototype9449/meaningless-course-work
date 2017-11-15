@@ -1,21 +1,13 @@
 ﻿using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-using System.Dynamic;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Http.Description;
-using ExpressionBuilder;
-using Microsoft.CSharp;
-using WebApplication1;
 
 namespace WebApplication1.Controllers
 {
@@ -95,7 +87,6 @@ namespace WebApplication1.Controllers
 
             policy.TableName = policyModel.TableName;
             policy.Value = policyModel.PredicateValue;
-            policy.Assembly = Expressions.BuildAssemblyFromExpression(policyModel.PredicateValue);
 
             db.Entry(policy).State = EntityState.Modified;
 
@@ -134,7 +125,6 @@ namespace WebApplication1.Controllers
             {
                 TableName = policy.TableName,
                 Value = policy.PredicateValue,
-                Assembly = Expressions.BuildAssemblyFromExpression(policy.PredicateValue),
                 Groups = groups
             };
             db.Predicates.Add(predicate);
