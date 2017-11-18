@@ -10,7 +10,7 @@ namespace SqlParcer
 {
     public static class ContextParcer
     {
-        private const string ConnectionString = "context connection=true";
+        public static string ConnectionString = "context connection=true";
 
         public class Tuple
         {
@@ -137,8 +137,7 @@ namespace SqlParcer
                 ).ToList();
         }
 
-        private static Dictionary<string, SqlResult> GetRowValues(string sqlEntityName, List<Identfier> identifiers, List<string> columns,
-            string connectionString = ConnectionString)
+        private static Dictionary<string, SqlResult> GetRowValues(string sqlEntityName, List<Identfier> identifiers, List<string> columns)
         {
             var whereStatement = string.Join(" and ", identifiers.Select(x => $"{x.Column} = @{x.Column}"));
             var columnString = string.Join(", ", columns);
@@ -146,7 +145,7 @@ namespace SqlParcer
 
             var result = new Dictionary<string, SqlResult>();
 
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(ConnectionString))
             {
                 SqlCommand cmd = new SqlCommand(sqlstringRequest, connection) { CommandType = CommandType.Text };
                 identifiers.ForEach(x =>
@@ -196,11 +195,6 @@ namespace SqlParcer
         public static bool ExecutePredicate(string currentTableName, string contextTableName, string expressions, 
             string rowIdentfierKeys, string contextIdentifierKeys)
         {
-            //1) parse expressions into separate predicates
-            //2) parse each predicate to know what columns from context row are used and columns from current row
-            //3) make 2 request - for current row, for context row
-            //4) take data and 
-
             var predicates = GetPredicates(expressions);
 
             var rowIdentifiers = GetIdentifiers(rowIdentfierKeys);
@@ -211,8 +205,25 @@ namespace SqlParcer
 
             var rowValues = GetRowValues($"{currentTableName}", rowIdentifiers, rowColumns);
             var contextValues = GetRowValues($"{contextTableName}", contextIdentifers, contextColumns);
-            
 
+            var result = predicates.Aggregate<Predicate, bool, bool>(false, (acc, predicate) =>
+            {
+                var leftValue = predicate.Left.Type == VariableType.Row
+                    ? rowValues[predicate.Left.Value]
+                    : predicate.Left.Type == VariableType.Context
+                        ? contextValues[predicate.Left.Value].Value
+                        : predicate.Left.Value;
+
+                var rightValue = predicate.Right.Type == VariableType.Row
+                    ? rowValues[predicate.Right.Value]
+                    : predicate.Right.Type == VariableType.Context
+                        ? contextValues[predicate.Right.Value].Value
+                        : predicate.Right.Value;
+
+                return (int)leftValue == (int)rightValue && acc;
+            }, b => b);
+
+            return result;
         }
     }
 
