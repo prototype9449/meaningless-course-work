@@ -12,7 +12,7 @@ namespace PolicyTester
         static void Main(string[] args)
         {
             var connectionString = "Data Source=HOME;Initial Catalog=NewOnlineShop;Integrated Security=True";
-            var currentTable = "dbo.Orders";
+            var currentTable = "Orders";
             var userTable = "dbo.Employees";
             var rowIdentifierKeys = "[id][1][int]";
             var userIdentifierKeys = "[id][1][int]";

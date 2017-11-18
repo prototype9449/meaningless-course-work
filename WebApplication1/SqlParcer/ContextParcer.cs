@@ -32,8 +32,8 @@ namespace SqlParcer
 
         public class Point
         {
-            public VariableType Type { get; }
-            public string Value { get; }
+            public VariableType Type { get; set; }
+            public string Value { get; set; }
 
             public Point(VariableType type, string value)
             {
@@ -60,8 +60,8 @@ namespace SqlParcer
 
         public class Predicate
         {
-            public Point Left { get; }
-            public Point Right { get; }
+            public Point Left { get; set; }
+            public Point Right { get; set; }
 
             public Predicate(Point left, Point right)
             {
@@ -72,9 +72,9 @@ namespace SqlParcer
 
         public class Identfier
         {
-            public string Column { get; }
-            public string Value { get; }
-            public string Type { get; }
+            public string Column { get; set; }
+            public string Value { get; set; }
+            public string Type { get; set; }
 
             public Identfier(string column, string value, string type)
             {
@@ -86,8 +86,8 @@ namespace SqlParcer
 
         public class SqlResult
         {
-            public object Value { get; }
-            public Type ValueType { get; }
+            public object Value { get; set; }
+            public Type ValueType { get; set; }
 
             public SqlResult(object value, Type valueType)
             {
@@ -139,9 +139,9 @@ namespace SqlParcer
 
         private static Dictionary<string, SqlResult> GetRowValues(string sqlEntityName, List<Identfier> identifiers, List<string> columns)
         {
-            var whereStatement = string.Join(" and ", identifiers.Select(x => $"{x.Column} = @{x.Column}"));
+            var whereStatement = string.Join(" and ", identifiers.Select(x => x.Column + " = @" + x.Column));
             var columnString = string.Join(", ", columns);
-            var sqlstringRequest = $"select {columnString} from {sqlEntityName} where {whereStatement}";
+            var sqlstringRequest = "select " + columnString + " from " + sqlEntityName + " where " + whereStatement;
 
             var result = new Dictionary<string, SqlResult>();
 
@@ -150,20 +150,7 @@ namespace SqlParcer
                 SqlCommand cmd = new SqlCommand(sqlstringRequest, connection) { CommandType = CommandType.Text };
                 identifiers.ForEach(x =>
                 {
-                    object value;
-                    if (x.Type == "string")
-                    {
-                        value = x.Value;
-                    }
-                    else
-                    {
-                        value = int.Parse(x.Value);
-                    }
-
-                    var parameter = cmd.CreateParameter();
-                    parameter.Value = value;
-                    parameter.ParameterName = $"@{x.Column}";
-                    cmd.Parameters.Add(parameter);
+                    cmd.Parameters.AddWithValue("@" + x.Column, int.Parse(x.Value));
                 });
 
                 cmd.Connection.Open();
@@ -175,9 +162,13 @@ namespace SqlParcer
                     {
                         for (var i = 0; i < reader.FieldCount; i++)
                         {
-                            result.Add(reader.GetName(0), new SqlResult(reader.GetValue(i), reader.GetFieldType(i)));
+                            result.Add(reader.GetName(i), new SqlResult(reader.GetValue(i), reader.GetFieldType(i)));
                         }
                     }
+                }
+                catch (Exception)
+                {
+                    var e = 1;
                 }
                 finally
                 {
@@ -203,24 +194,24 @@ namespace SqlParcer
             var contextIdentifers = GetIdentifiers(contextIdentifierKeys);
             var contextColumns = GetColumns(predicates, VariableType.Context);
 
-            var rowValues = GetRowValues($"{currentTableName}", rowIdentifiers, rowColumns);
-            var contextValues = GetRowValues($"{contextTableName}", contextIdentifers, contextColumns);
+            var rowValues = GetRowValues(currentTableName, rowIdentifiers, rowColumns);
+            var contextValues = GetRowValues(contextTableName, contextIdentifers, contextColumns);
 
-            var result = predicates.Aggregate<Predicate, bool, bool>(false, (acc, predicate) =>
+            var result = predicates.Aggregate<Predicate, bool, bool>(true, (acc, predicate) =>
             {
                 var leftValue = predicate.Left.Type == VariableType.Row
-                    ? rowValues[predicate.Left.Value]
+                    ? rowValues[predicate.Left.Value].Value
                     : predicate.Left.Type == VariableType.Context
                         ? contextValues[predicate.Left.Value].Value
                         : predicate.Left.Value;
 
                 var rightValue = predicate.Right.Type == VariableType.Row
-                    ? rowValues[predicate.Right.Value]
+                    ? rowValues[predicate.Right.Value].Value
                     : predicate.Right.Type == VariableType.Context
                         ? contextValues[predicate.Right.Value].Value
                         : predicate.Right.Value;
 
-                return (int)leftValue == (int)rightValue && acc;
+                return leftValue.ToString() == rightValue.ToString();
             }, b => b);
 
             return result;
