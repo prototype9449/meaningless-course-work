@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -11,6 +12,8 @@ namespace SqlParcer
     public static class ContextParcer
     {
         public static string ConnectionString = "context connection=true";
+
+       
 
         public class Tuple
         {
@@ -147,10 +150,11 @@ namespace SqlParcer
 
             using (var connection = new SqlConnection(ConnectionString))
             {
+               
                 SqlCommand cmd = new SqlCommand(sqlstringRequest, connection) { CommandType = CommandType.Text };
                 identifiers.ForEach(x =>
                 {
-                    cmd.Parameters.AddWithValue("@" + x.Column, int.Parse(x.Value));
+                    cmd.Parameters.AddWithValue("@" + x.Column, TypeDescriptor.GetConverter(Type.GetType(x.Type)).ConvertFromString(x.Value));
                 });
 
                 cmd.Connection.Open();
@@ -165,10 +169,6 @@ namespace SqlParcer
                             result.Add(reader.GetName(i), new SqlResult(reader.GetValue(i), reader.GetFieldType(i)));
                         }
                     }
-                }
-                catch (Exception)
-                {
-                    var e = 1;
                 }
                 finally
                 {
