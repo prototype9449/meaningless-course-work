@@ -9,95 +9,94 @@ using Microsoft.SqlServer.Server;
 
 namespace SqlParcer
 {
+
+    public class Tuple
+    {
+        public Tuple(string variable, string value)
+        {
+            Variable = variable;
+            Value = value;
+        }
+        public string Variable { get; set; }
+        public string Value { get; set; }
+    }
+
+    public enum VariableType
+    {
+        Context,
+        Row,
+        Constant
+    }
+
+    public class Point
+    {
+        public VariableType Type { get; set; }
+        public string Value { get; set; }
+
+        public Point(VariableType type, string value)
+        {
+            Type = type;
+            Value = value;
+        }
+
+        public static Point Parse(string row)
+        {
+            if (row.StartsWith("C."))
+            {
+                return new Point(VariableType.Context, row.Substring(2));
+            }
+            else if (row.StartsWith("R."))
+            {
+                return new Point(VariableType.Row, row.Substring(2));
+            }
+            else
+            {
+                return new Point(VariableType.Constant, row);
+            }
+        }
+    }
+
+    public class Predicate
+    {
+        public Point Left { get; set; }
+        public Point Right { get; set; }
+
+        public Predicate(Point left, Point right)
+        {
+            Left = left;
+            Right = right;
+        }
+    }
+
+    public class Identfier
+    {
+        public string Column { get; set; }
+        public string Value { get; set; }
+        public string Type { get; set; }
+
+        public Identfier(string column, string value, string type)
+        {
+            Column = column;
+            Value = value;
+            Type = type;
+        }
+    }
+
+    public class SqlResult
+    {
+        public object Value { get; set; }
+        public Type ValueType { get; set; }
+
+        public SqlResult(object value, Type valueType)
+        {
+            Value = value;
+            ValueType = valueType;
+        }
+    }
+
     public static class ContextParcer
     {
         public static string ConnectionString = "context connection=true";
-
-       
-
-        public class Tuple
-        {
-            public Tuple(string variable, string value)
-            {
-                Variable = variable;
-                Value = value;
-            }
-            public string Variable { get; set; }
-            public string Value { get; set; }
-        }
-
-        public enum VariableType
-        {
-            Context,
-            Row,
-            Constant
-        }
-
-        public class Point
-        {
-            public VariableType Type { get; set; }
-            public string Value { get; set; }
-
-            public Point(VariableType type, string value)
-            {
-                Type = type;
-                Value = value;
-            }
-
-            public static Point Parse(string row)
-            {
-                if (row.StartsWith("C."))
-                {
-                    return new Point(VariableType.Context, row.Substring(2));
-                }
-                else if (row.StartsWith("R."))
-                {
-                    return new Point(VariableType.Row, row.Substring(2));
-                }
-                else
-                {
-                    return new Point(VariableType.Constant, row);
-                }
-            }
-        }
-
-        public class Predicate
-        {
-            public Point Left { get; set; }
-            public Point Right { get; set; }
-
-            public Predicate(Point left, Point right)
-            {
-                Left = left;
-                Right = right;
-            }
-        }
-
-        public class Identfier
-        {
-            public string Column { get; set; }
-            public string Value { get; set; }
-            public string Type { get; set; }
-
-            public Identfier(string column, string value, string type)
-            {
-                Column = column;
-                Value = value;
-                Type = type;
-            }
-        }
-
-        public class SqlResult
-        {
-            public object Value { get; set; }
-            public Type ValueType { get; set; }
-
-            public SqlResult(object value, Type valueType)
-            {
-                Value = value;
-                ValueType = valueType;
-            }
-        }
 
         private static List<Identfier> GetIdentifiers(string identifierRow)
         {

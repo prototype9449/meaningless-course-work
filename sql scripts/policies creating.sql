@@ -87,12 +87,35 @@ EXEC sp_configure 'clr enabled', 1
 RECONFIGURE; 
 
 
-drop function if exists getUserAccessClr
+
+
+
+ALTER DATABASE NewOnlineShop SET TRUSTWORTHY ON;
+
+
+drop security policy if exists dbo.[OrdersPolicy]  
+drop security policy if exists dbo.[EmployeesPolicy]   
+drop security policy if exists dbo.[CustomersPolicy]  
+
+drop function if exists dbo.securityPredicateOrders
+drop function if exists dbo.securityPredicateEmployees
+drop function if exists dbo.securityPredicateCustomers
+
+go
+drop function if exists dbo.getUserAccess
+go
+drop function if exists dbo.getUserAccessClr
 go
 drop ASSEMBLY if exists Parser
 go
-create ASSEMBLY Parser FROM 'E:\RemotedProjects\security-policy\WebApplication1\SqlParcer\bin\Debug\SqlParser.dll';  
+create ASSEMBLY Parser FROM 'C:\repositories\security-policy\WebApplication1\SqlParcer\bin\Debug\SqlParcer.dll'
+WITH PERMISSION_SET = UNSAFE;    
 GO 
+
+
+ 
+
+go
 create FUNCTION dbo.getUserAccessClr(
 	@currentTableName nvarchar(500), 
 	@userTableName nvarchar(500), 
@@ -100,20 +123,20 @@ create FUNCTION dbo.getUserAccessClr(
 	@currentRowIdentifiers nvarchar(500),
 	@userRowIdentifiers nvarchar(500)
 ) RETURNS bit  
- AS EXTERNAL NAME Parser.ContextParser.ExecutePredicate;   
+ AS EXTERNAL NAME Parser.[SqlParcer.ContextParcer].ExecutePredicate;   
 GO 
-drop function if exists dbo.getUserAccess
-go
+
 CREATE FUNCTION dbo.getUserAccess(@CurrentTableName nvarchar(200), @RowIdentifiers nvarchar(max))  
 RETURNS bit
+WITH SCHEMABINDING
 AS   
 BEGIN
- DECLARE @predicates nvarchar(4000);
+ DECLARE @predicates nvarchar(max);
  Declare @result bit;
  select @predicates = COALESCE(@predicates + ',', '') + dbo.Predicates.Value from 
 	 dbo.Predicates join  dbo.Policies 
 	on  dbo.Predicates.id =  dbo.Policies.PredicateId 
-	and  dbo.Predicates.TableName = @TableName
+	and  dbo.Predicates.TableName = @CurrentTableName
 	join  dbo.EmployeeGroups 
 	on  dbo.EmployeeGroups.GroupId =  dbo.Policies.GroupId
 	and  dbo.EmployeeGroups.EmployeeId = CAST(SESSION_CONTEXT(N'UserId') AS int);
@@ -129,53 +152,59 @@ BEGIN
 	    	'dbo.Employees', 
 	    	@predicates, 
 	    	@RowIdentifiers, 
-	    	CONCAT ('[id][',SESSION_CONTEXT(N'UserId'),'][int]')
+	    	CONCAT ('[id][', cast(SESSION_CONTEXT(N'UserId') as nvarchar(50)),'][System.Int32]')
 	    )
 	  end
 	  return @result	
 END;
 go
-drop function if exists dbo.securityPredicateOrders
-go
 create FUNCTION dbo.securityPredicateOrders(@id int)  
     RETURNS TABLE 
 	 WITH SCHEMABINDING
 AS  
-    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('dbo.Orders', concat('[id][', @id, '][int]'))) = 1) 
-go
-drop function if exists dbo.securityPredicateEmployees
+    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('dbo.Orders', concat('[id][', @id, '][System.Int32]'))) = 1) 
 go
 create FUNCTION dbo.securityPredicateEmployees(@id int)  
     RETURNS TABLE 
 	 WITH SCHEMABINDING
 AS  
-    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('dbo.Employees', concat('[id][', @id, '][int]'))) = 1) 
-go
-drop function if exists dbo.securityPredicateCustomers
+    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('dbo.Employees', concat('[id][', @id, '][System.Int32]'))) = 1) 
 go
 create FUNCTION dbo.securityPredicateCustomers(@id int)  
     RETURNS TABLE 
 	 WITH SCHEMABINDING
 AS  
-    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('dbo.Customers', concat('[id][', @id, '][int]'))) = 1)
+    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('dbo.Customers', concat('[id][', @id, '][System.Int]'))) = 1)
 go
-drop security policy if exists dbo.[OrdersPolicy]   
+ 
 create SECURITY POLICY dbo.[OrdersPolicy]   
 ADD FILTER PREDICATE dbo.securityPredicateOrders(id)   
     ON [dbo].[Orders]
 WITH (STATE = ON); 
 
-drop security policy if exists dbo.[EmployeesPolicy]   
 create SECURITY POLICY dbo.[EmployeesPolicy]   
 ADD FILTER PREDICATE dbo.securityPredicateEmployees(id)   
     ON [dbo].[Employees]
 WITH (STATE = ON); 
 
-drop security policy if exists dbo.[CustomersPolicy]   
 create SECURITY POLICY dbo.[CustomersPolicy]   
 ADD FILTER PREDICATE dbo.securityPredicateCustomers(id)   
     ON [dbo].[Customers]
 WITH (STATE = ON); 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

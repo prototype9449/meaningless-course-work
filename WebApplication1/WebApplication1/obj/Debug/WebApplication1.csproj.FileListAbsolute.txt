@@ -63,7 +63,6 @@ C:\repositories\security-policy\WebApplication1\WebApplication1\bin\WebApplicati
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\WebApplication1.pdb
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\EntityFramework.dll
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\EntityFramework.SqlServer.dll
-C:\repositories\security-policy\WebApplication1\WebApplication1\bin\ExpressionBuilder.dll
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\Microsoft.AI.Agent.Intercept.dll
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\Microsoft.AI.DependencyCollector.dll
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\Microsoft.AI.PerfCounterCollector.dll
@@ -82,8 +81,6 @@ C:\repositories\security-policy\WebApplication1\WebApplication1\bin\System.Web.H
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\System.Web.Http.dll
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\System.Web.Http.OData.dll
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\System.Web.Http.WebHost.dll
-C:\repositories\security-policy\WebApplication1\WebApplication1\bin\DynamicWrapper.dll
-C:\repositories\security-policy\WebApplication1\WebApplication1\bin\ExpressionBuilder.pdb
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\EntityFramework.xml
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\EntityFramework.SqlServer.xml
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\Microsoft.AI.DependencyCollector.xml
@@ -101,7 +98,6 @@ C:\repositories\security-policy\WebApplication1\WebApplication1\bin\Newtonsoft.J
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\System.Net.Http.Formatting.xml
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\System.Web.Http.xml
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\System.Web.Http.WebHost.xml
-C:\repositories\security-policy\WebApplication1\WebApplication1\bin\DynamicWrapper.pdb
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\de\Microsoft.Data.Edm.resources.dll
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\es\Microsoft.Data.Edm.resources.dll
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\fr\Microsoft.Data.Edm.resources.dll
