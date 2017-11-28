@@ -5,94 +5,11 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Text.RegularExpressions;
 using Microsoft.SqlServer.Server;
 
 namespace SqlParcer
 {
-
-    public class Tuple
-    {
-        public Tuple(string variable, string value)
-        {
-            Variable = variable;
-            Value = value;
-        }
-        public string Variable { get; set; }
-        public string Value { get; set; }
-    }
-
-    public enum VariableType
-    {
-        Context,
-        Row,
-        Constant
-    }
-
-    public class Point
-    {
-        public VariableType Type { get; set; }
-        public string Value { get; set; }
-
-        public Point(VariableType type, string value)
-        {
-            Type = type;
-            Value = value;
-        }
-
-        public static Point Parse(string row)
-        {
-            if (row.StartsWith("C."))
-            {
-                return new Point(VariableType.Context, row.Substring(2));
-            }
-            else if (row.StartsWith("R."))
-            {
-                return new Point(VariableType.Row, row.Substring(2));
-            }
-            else
-            {
-                return new Point(VariableType.Constant, row);
-            }
-        }
-    }
-
-    public class Predicate
-    {
-        public Point Left { get; set; }
-        public Point Right { get; set; }
-
-        public Predicate(Point left, Point right)
-        {
-            Left = left;
-            Right = right;
-        }
-    }
-
-    public class Identfier
-    {
-        public string Column { get; set; }
-        public string Value { get; set; }
-        public string Type { get; set; }
-
-        public Identfier(string column, string value, string type)
-        {
-            Column = column;
-            Value = value;
-            Type = type;
-        }
-    }
-
-    public class SqlResult
-    {
-        public object Value { get; set; }
-        public Type ValueType { get; set; }
-
-        public SqlResult(object value, Type valueType)
-        {
-            Value = value;
-            ValueType = valueType;
-        }
-    }
 
     public static class ContextParcer
     {
@@ -114,29 +31,17 @@ namespace SqlParcer
             return result;
         }
 
-        private static List<Predicate> GetPredicates(string expressions)
+        private static List<Point> GetPredicates(List<string> tokens)
         {
-            var predicates = expressions.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var predicateTuples = new List<Predicate>();
-            foreach (var pred in predicates)
-            {
-                var values = pred.Split(new[] { '='}, StringSplitOptions.RemoveEmptyEntries);
-                predicateTuples.Add(new Predicate(Point.Parse(values[0]), Point.Parse(values[1])));
-            }
-
-            return predicateTuples;
+            return tokens.Select(Point.Parse).Where(x => x.Type == VariableType.Context || x.Type == VariableType.Row).ToList();
         }
 
-        private static List<string> GetColumns(List<Predicate> predicates, VariableType variableType)
+        private static List<string> GetColumns(List<Point> predicates, VariableType variableType)
         {
             return predicates
-                .Where(x => x.Left.Type == variableType)
-                .Select(x => x.Left.Value)
-                .Union(
-                    predicates
-                        .Where(x => x.Right.Type == variableType)
-                        .Select(x => x.Right.Value)
-                ).ToList();
+                .Where(x => x.Type == variableType)
+                .Select(x => x.Value)
+                .ToList();
         }
 
         private static Dictionary<string, SqlResult> GetRowValues(string sqlEntityName, List<Identfier> identifiers, List<string> columns)
@@ -149,11 +54,11 @@ namespace SqlParcer
 
             using (var connection = new SqlConnection(ConnectionString))
             {
-               
+
                 SqlCommand cmd = new SqlCommand(sqlstringRequest, connection) { CommandType = CommandType.Text };
                 identifiers.ForEach(x =>
                 {
-                    cmd.Parameters.AddWithValue("@" + x.Column, TypeDescriptor.GetConverter(Type.GetType(x.Type)).ConvertFromString(x.Value));
+                    cmd.Parameters.AddWithValue("@" + x.Column, TypeDescriptor.GetConverter(Operations.types[x.Type]).ConvertFromString(x.Value));
                 });
 
                 cmd.Connection.Open();
@@ -182,10 +87,11 @@ namespace SqlParcer
         }
 
         [SqlFunction(DataAccess = DataAccessKind.Read)]
-        public static bool ExecutePredicate(string currentTableName, string contextTableName, string expressions, 
+        public static bool ExecutePredicate(string currentTableName, string contextTableName, string expressions,
             string rowIdentfierKeys, string contextIdentifierKeys)
         {
-            var predicates = GetPredicates(expressions);
+            var tokens = ReversePolishNotation.GetTokens(expressions);
+            var predicates = GetPredicates(tokens);
 
             var rowIdentifiers = GetIdentifiers(rowIdentfierKeys);
             var rowColumns = GetColumns(predicates, VariableType.Row);
@@ -196,24 +102,13 @@ namespace SqlParcer
             var rowValues = GetRowValues(currentTableName, rowIdentifiers, rowColumns);
             var contextValues = GetRowValues(contextTableName, contextIdentifers, contextColumns);
 
-            var result = predicates.Aggregate<Predicate, bool, bool>(true, (acc, predicate) =>
+            foreach (var sqlResult in contextValues)
             {
-                var leftValue = predicate.Left.Type == VariableType.Row
-                    ? rowValues[predicate.Left.Value].Value
-                    : predicate.Left.Type == VariableType.Context
-                        ? contextValues[predicate.Left.Value].Value
-                        : predicate.Left.Value;
+                rowValues.Add(sqlResult.Key, sqlResult.Value);
+            }
 
-                var rightValue = predicate.Right.Type == VariableType.Row
-                    ? rowValues[predicate.Right.Value].Value
-                    : predicate.Right.Type == VariableType.Context
-                        ? contextValues[predicate.Right.Value].Value
-                        : predicate.Right.Value;
 
-                return leftValue.ToString() == rightValue.ToString();
-            }, b => b);
-
-            return result;
+            return ReversePolishNotation.Evaluate(tokens, rowValues);
         }
     }
 

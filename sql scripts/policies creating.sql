@@ -133,7 +133,7 @@ AS
 BEGIN
  DECLARE @predicates nvarchar(max);
  Declare @result bit;
- select @predicates = COALESCE(@predicates + ',', '') + dbo.Predicates.Value from 
+ select @predicates = COALESCE(@predicates + ' and ', '') + dbo.Predicates.Value from 
 	 dbo.Predicates join  dbo.Policies 
 	on  dbo.Predicates.id =  dbo.Policies.PredicateId 
 	and  dbo.Predicates.TableName = @CurrentTableName
@@ -274,7 +274,7 @@ RETURNS nvarchar(max)
 AS   
 BEGIN
  DECLARE @predicatesIds nvarchar(4000);
- select @predicatesIds = COALESCE(@predicatesIds + ',', '') + dbo.Predicates.id from 
+ select @predicatesIds = COALESCE(@predicatesIds + ' and ', '') + dbo.Predicates.id from 
 	 dbo.Predicates join  dbo.Policies 
 	on  dbo.Predicates.id =  dbo.Policies.PredicateId 
 	and  dbo.Predicates.TableName = @TableName
