@@ -152,7 +152,7 @@ BEGIN
 	    	'dbo.Employees', 
 	    	@predicates, 
 	    	@RowIdentifiers, 
-	    	CONCAT ('[id][', cast(SESSION_CONTEXT(N'UserId') as nvarchar(50)),'][System.Int32]')
+	    	CONCAT ('[id][', cast(SESSION_CONTEXT(N'UserId') as nvarchar(50)),'][int]')
 	    )
 	  end
 	  return @result	
@@ -162,19 +162,19 @@ create FUNCTION dbo.securityPredicateOrders(@id int)
     RETURNS TABLE 
 	 WITH SCHEMABINDING
 AS  
-    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('dbo.Orders', concat('[id][', @id, '][System.Int32]'))) = 1) 
+    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('dbo.Orders', concat('[id][', @id, '][int]'))) = 1) 
 go
 create FUNCTION dbo.securityPredicateEmployees(@id int)  
     RETURNS TABLE 
 	 WITH SCHEMABINDING
 AS  
-    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('dbo.Employees', concat('[id][', @id, '][System.Int32]'))) = 1) 
+    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('dbo.Employees', concat('[id][', @id, '][int]'))) = 1) 
 go
 create FUNCTION dbo.securityPredicateCustomers(@id int)  
     RETURNS TABLE 
 	 WITH SCHEMABINDING
 AS  
-    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('dbo.Customers', concat('[id][', @id, '][System.Int]'))) = 1)
+    RETURN SELECT 1 as Resu where ((select dbo.getUserAccess('dbo.Customers', concat('[id][', @id, '][int]'))) = 1)
 go
  
 create SECURITY POLICY dbo.[OrdersPolicy]   
