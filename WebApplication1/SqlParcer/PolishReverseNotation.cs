@@ -72,6 +72,8 @@ namespace SqlParcer
                 case "=":
                 case ">":
                 case "<":
+                case ">=":
+                case "<=":
                 case "like":
                     result = 3;
                     break;
@@ -125,6 +127,10 @@ namespace SqlParcer
                         {
                             throw new Exception("there was not )");
                         }
+                    }
+                    else if (node.value == "(")
+                    {
+                        stack.Push(node);
                     }
                     else
                     {

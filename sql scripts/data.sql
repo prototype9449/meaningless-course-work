@@ -28,3 +28,23 @@ INSERT INTO dbo.OrderDetails(OrderId, ProductID, Number) VALUES
 (1, 1, 4),
 (2, 2, 5),
 (3, 3, 3)
+
+insert into dbo.Groups(Name,Description) values
+('Yaroslavl', 'Group frm yar'),
+('Moscow', 'Group from Moscow'),
+('Kazan', 'Group from Kazan')
+
+insert into dbo.EmployeeGroups(EmployeeId, GroupId) values
+(1, 1),
+(2, 2),
+(3, 3)
+
+insert into dbo.Predicates(TableName, Value) values
+('dbo.Orders', 'R.EmployeeID = C.id and R.CustomerID = 1'),
+('dbo.Employees', 'R.City = C.City'),
+('dbo.Customers', 'C.id = R.OwnerId')
+
+insert into dbo.Policies(GroupId, PredicateId) values
+(1, 1),
+(1, 2),
+(1, 3)

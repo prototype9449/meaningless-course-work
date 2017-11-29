@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace SqlParcer
 {
@@ -19,7 +20,7 @@ namespace SqlParcer
             {"float", typeof(float)},
             {"double", typeof(double)},
             {"datetime", typeof(DateTime)},
-            {"time", typeof(TimeSpan)},
+            {"timespan", typeof(TimeSpan)},
             {"byte", typeof(byte)},
         };
 
@@ -34,12 +35,9 @@ namespace SqlParcer
                     second = new SqlResult(converter.ConvertFromString((string)second.Value), first.ValueType);
                     return new Tuple<SqlResult, SqlResult>(first, second);
                 }
-                else
-                {
-                    throw new Exception("impossible to make an implcit convertion");
-                }
+                throw new Exception("impossible to make an implcit convertion");
             }
-            else if (first.ValueType == typeof(string) && second.ValueType != typeof(string))
+            if (first.ValueType == typeof(string) && second.ValueType != typeof(string))
             {
                 var converter = TypeDescriptor.GetConverter(second.ValueType);
                 if (converter.CanConvertFrom(typeof(string)))
@@ -47,12 +45,9 @@ namespace SqlParcer
                     first = new SqlResult(converter.ConvertFromString((string)first.Value), second.ValueType);
                     return new Tuple<SqlResult, SqlResult>(first, second);
                 }
-                else
-                {
-                    throw new Exception("impossible to make an implcit convertion");
-                }
+                throw new Exception("impossible to make an implcit convertion");
             }
-            else if (first.ValueType == second.ValueType)
+            if (first.ValueType == second.ValueType)
             {
                 return new Tuple<SqlResult, SqlResult>(first, second);
             }
@@ -105,34 +100,35 @@ namespace SqlParcer
         }
         public static SqlResult As(SqlResult first, SqlResult second)
         {
-            if (first.ValueType == typeof(string) && second.ValueType == typeof(string))
+            if (second.ValueType != typeof(string))
             {
-                if (!types.ContainsKey((string)second.Value))
+                throw new Exception("wrong type name");
+            }
+
+            if (first.ValueType == typeof(string))
+            {
+                if (!types.ContainsKey((string) second.Value))
                 {
                     throw new Exception("wrong type");
                 }
-                var typeToConvert = types[(string)second.Value];
+                var typeToConvert = types[(string) second.Value];
                 if (typeToConvert == null)
                 {
                     throw new Exception("there was not fount a such type");
                 }
-                var result = TypeDescriptor.GetConverter(typeToConvert).ConvertFromString((string)first.Value);
+                var result = TypeDescriptor.GetConverter(typeToConvert).ConvertFromString((string) first.Value);
 
                 return new SqlResult(result, typeToConvert);
             }
 
-            var newValue = Convert.ChangeType(first.Value, second.ValueType);
+            var type = types[(string) second.Value];
+            var newValue = Convert.ChangeType(first.Value, type);
 
-            return new SqlResult(newValue, second.ValueType);
+            return new SqlResult(newValue, type);
         }
 
         public static SqlResult Substract(SqlResult first, SqlResult second)
         {
-            if (first.ValueType != second.ValueType)
-            {
-                throw new Exception("mismatched types");
-            }
-
             object value = null;
             Type resultType = null;
 
@@ -167,11 +163,6 @@ namespace SqlParcer
 
         public static SqlResult Multiply(SqlResult first, SqlResult second)
         {
-            if (first.ValueType != second.ValueType)
-            {
-                throw new Exception("mismatched types");
-            }
-
             object value = null;
             Type resultType = null;
 
@@ -196,11 +187,6 @@ namespace SqlParcer
 
         public static SqlResult Divide(SqlResult first, SqlResult second)
         {
-            if (first.ValueType != second.ValueType)
-            {
-                throw new Exception("mismatched types");
-            }
-
             object value = null;
             Type resultType = null;
 
@@ -225,12 +211,6 @@ namespace SqlParcer
 
         public static bool More(SqlResult first, SqlResult second)
         {
-            if (first.ValueType != second.ValueType || first.ValueType == typeof(DateTime) && second.ValueType != typeof(TimeSpan))
-            {
-                throw new Exception("mismatched types");
-            }
-
-
             if (first.ValueType == typeof(int))
             {
                 return (int)first.Value > (int)second.Value;
@@ -256,11 +236,6 @@ namespace SqlParcer
 
         public static bool Less(SqlResult first, SqlResult second)
         {
-            if (first.ValueType != second.ValueType || first.ValueType == typeof(DateTime) && second.ValueType != typeof(TimeSpan))
-            {
-                throw new Exception("mismatched types");
-            }
-
             if (first.ValueType == typeof(int))
             {
                 return (int)first.Value < (int)second.Value;
@@ -287,7 +262,7 @@ namespace SqlParcer
 
         public static bool And(SqlResult first, SqlResult second)
         {
-            if (first.ValueType == second.ValueType && first.ValueType == typeof(bool))
+            if (first.ValueType == typeof(bool))
             {
                 return (bool)first.Value && (bool)second.Value;
             }
@@ -297,7 +272,7 @@ namespace SqlParcer
 
         public static bool Or(SqlResult first, SqlResult second)
         {
-            if (first.ValueType == second.ValueType && first.ValueType == typeof(bool))
+            if (first.ValueType == typeof(bool))
             {
                 return (bool)first.Value || (bool)second.Value;
             }
@@ -307,9 +282,10 @@ namespace SqlParcer
 
         public static bool Equal(SqlResult first, SqlResult second)
         {
-            if (first.ValueType != second.ValueType)
+
+            if (first.ValueType == typeof(byte[]))
             {
-                throw new Exception("mismatched types");
+                return ((byte[]) first.Value).SequenceEqual((byte[]) second.Value);
             }
 
             var result = Equals(first.Value, second.Value);

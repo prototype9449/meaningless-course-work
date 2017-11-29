@@ -99,8 +99,8 @@ namespace SqlParcer
             var contextIdentifers = GetIdentifiers(contextIdentifierKeys);
             var contextColumns = GetColumns(predicates, VariableType.Context);
 
-            var rowValues = GetRowValues(currentTableName, rowIdentifiers, rowColumns);
-            var contextValues = GetRowValues(contextTableName, contextIdentifers, contextColumns);
+            var rowValues = GetRowValues(currentTableName, rowIdentifiers, rowColumns).ToDictionary(key => "R." + key.Key, value => value.Value);
+            var contextValues = GetRowValues(contextTableName, contextIdentifers, contextColumns).ToDictionary(key => "C." + key.Key, value => value.Value);
 
             foreach (var sqlResult in contextValues)
             {

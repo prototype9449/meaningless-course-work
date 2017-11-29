@@ -200,17 +200,6 @@ WITH (STATE = ON);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 CREATE FUNCTION dbo.getColumnsAsString(@TABLE_NAME nvarchar(200), @SCHEMA_NAME nvarchar(128))  
 RETURNS nvarchar(max)
 AS   
@@ -266,23 +255,5 @@ DEALLOCATE TableCursor
 
 return @vvc_ColumnList
 END;
-print dbo.getColumnsAsString('Employees', 'dbo')
 
-
-CREATE FUNCTION dbo.getUserPredicateIds(@TableName nvarchar(200))  
-RETURNS nvarchar(max)
-AS   
-BEGIN
- DECLARE @predicatesIds nvarchar(4000);
- select @predicatesIds = COALESCE(@predicatesIds + ' and ', '') + dbo.Predicates.id from 
-	 dbo.Predicates join  dbo.Policies 
-	on  dbo.Predicates.id =  dbo.Policies.PredicateId 
-	and  dbo.Predicates.TableName = @TableName
-	join  dbo.EmployeeGroups 
-	on  dbo.EmployeeGroups.GroupId =  dbo.Policies.GroupId
-	and  dbo.EmployeeGroups.EmployeeId = CAST(SESSION_CONTEXT(N'UserId') AS int);
-
-	
-	  return @predicatesIds	
-END;
 
