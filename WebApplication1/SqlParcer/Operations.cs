@@ -1,298 +1,254 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 
 namespace SqlParcer
 {
     public static class Operations
     {
-        public static Dictionary<string, Type> types = new Dictionary<string, Type>()
+        public static Dictionary<string, Type> types = new Dictionary<string, Type>
         {
-            {"long", typeof(long)},
-            {"int", typeof(int)},
+            {"byte", typeof(byte)},
             {"short", typeof(short)},
+            {"int", typeof(int)},
+            {"long", typeof(long)},
+            {"double", typeof(double)},
+            {"float", typeof(float)},
+
             {"byte[]", typeof(byte[])},
             {"bool", typeof(bool)},
             {"string", typeof(string)},
-            {"float", typeof(float)},
-            {"double", typeof(double)},
+
             {"datetime", typeof(DateTime)},
-            {"timespan", typeof(TimeSpan)},
-            {"byte", typeof(byte)},
+            {"timespan", typeof(TimeSpan)}
         };
 
-
-        public static Tuple<SqlResult, SqlResult> ConvertToOneType(SqlResult first, SqlResult second)
+        public static List<Type> TypeConvert = new List<Type>()
         {
-            if (first.ValueType != typeof(string) && second.ValueType == typeof(string))
+            typeof(byte), typeof(short), typeof(int), typeof(long), typeof(double)
+        };
+
+        public static Tuple<object, object> ConvertToOneType(object first, object second)
+        {
+            if (first.GetType() == second.GetType())
+                return new Tuple<object, object>(first, second);
+
+            if (!TypeConvert.Contains(first.GetType()) || !TypeConvert.Contains(second.GetType()))
             {
-                var converter = TypeDescriptor.GetConverter(first.ValueType);
-                if (converter.CanConvertFrom(typeof(string)))
-                {
-                    second = new SqlResult(converter.ConvertFromString((string)second.Value), first.ValueType);
-                    return new Tuple<SqlResult, SqlResult>(first, second);
-                }
-                throw new Exception("impossible to make an implcit convertion");
-            }
-            if (first.ValueType == typeof(string) && second.ValueType != typeof(string))
-            {
-                var converter = TypeDescriptor.GetConverter(second.ValueType);
-                if (converter.CanConvertFrom(typeof(string)))
-                {
-                    first = new SqlResult(converter.ConvertFromString((string)first.Value), second.ValueType);
-                    return new Tuple<SqlResult, SqlResult>(first, second);
-                }
-                throw new Exception("impossible to make an implcit convertion");
-            }
-            if (first.ValueType == second.ValueType)
-            {
-                return new Tuple<SqlResult, SqlResult>(first, second);
+                throw new Exception("Impossible to make implicit convertion");
             }
 
-            throw new Exception("impossible to make an implcit convertion");
+            object firstResult;
+            object secondResult;
+
+            if (TypeConvert.IndexOf(first.GetType()) > TypeConvert.IndexOf(second.GetType()))
+            {
+                secondResult = Convert.ChangeType(second, first.GetType());
+                firstResult = first;
+            }
+            else
+            {
+                secondResult = second;
+                firstResult = Convert.ChangeType(first, second.GetType());
+            }
+
+            return new Tuple<object, object>(firstResult, secondResult);
         }
 
-        public static SqlResult Add(SqlResult first, SqlResult second)
+        public static object As(object first, object second)
         {
-            if (first.ValueType == typeof(DateTime) && second.ValueType != typeof(TimeSpan))
-            {
-                throw new Exception("mismatched types");
-            }
-
-            object value = null;
-            Type resultType = null;
-
-            if (first.ValueType == typeof(string))
-            {
-                value = (string)first.Value + (string)second.Value;
-                resultType = typeof(string);
-            }
-            else if (first.ValueType == typeof(int))
-            {
-                value = (int)first.Value + (int)second.Value;
-                resultType = typeof(int);
-            }
-            else if (first.ValueType == typeof(double))
-            {
-                value = (double)first.Value + (double)second.Value;
-                resultType = typeof(double);
-            }
-            else if (first.ValueType == typeof(float))
-            {
-                value = (float)first.Value + (float)second.Value;
-                resultType = typeof(float);
-            }
-            else if (first.ValueType == typeof(DateTime) && second.ValueType == typeof(TimeSpan))
-            {
-                value = (DateTime)first.Value + (TimeSpan)second.Value;
-                resultType = typeof(DateTime);
-            }
-            else if (first.ValueType == typeof(TimeSpan) && second.ValueType == typeof(TimeSpan))
-            {
-                value = (TimeSpan)first.Value + (TimeSpan)second.Value;
-                resultType = typeof(TimeSpan);
-            }
-
-            return new SqlResult(value, resultType);
-        }
-        public static SqlResult As(SqlResult first, SqlResult second)
-        {
-            if (second.ValueType != typeof(string))
-            {
+            if (second.GetType() != typeof(string))
                 throw new Exception("wrong type name");
-            }
 
-            if (first.ValueType == typeof(string))
+            if (first is string)
             {
-                if (!types.ContainsKey((string) second.Value))
-                {
+                if (!types.ContainsKey((string)second))
                     throw new Exception("wrong type");
-                }
-                var typeToConvert = types[(string) second.Value];
+                var typeToConvert = types[(string)second];
                 if (typeToConvert == null)
-                {
                     throw new Exception("there was not fount a such type");
-                }
-                var result = TypeDescriptor.GetConverter(typeToConvert).ConvertFromString((string) first.Value);
+                var result = TypeDescriptor.GetConverter(typeToConvert).ConvertFromString((string)first);
 
-                return new SqlResult(result, typeToConvert);
+                return result;
             }
 
-            var type = types[(string) second.Value];
-            var newValue = Convert.ChangeType(first.Value, type);
+            var type = types[(string)second];
+            var newValue = Convert.ChangeType(first, type);
 
-            return new SqlResult(newValue, type);
+            return newValue;
         }
 
-        public static SqlResult Substract(SqlResult first, SqlResult second)
+        public static object Add(object first, object second)
         {
-            object value = null;
-            Type resultType = null;
+            var tuple = (first is DateTime && second is TimeSpan)
+                ? new Tuple<object, object>(first, second)
+                : ConvertToOneType(first, second);
+            first = tuple.Item1;
+            second = tuple.Item2;
 
-            if (first.ValueType == typeof(int))
-            {
-                value = (int)first.Value - (int)second.Value;
-                resultType = typeof(int);
-            }
-            else if (first.ValueType == typeof(double))
-            {
-                value = (double)first.Value - (double)second.Value;
-                resultType = typeof(double);
-            }
-            else if (first.ValueType == typeof(float))
-            {
-                value = (float)first.Value - (float)second.Value;
-                resultType = typeof(float);
-            }
-            else if (first.ValueType == typeof(TimeSpan))
-            {
-                value = (TimeSpan)first.Value - (TimeSpan)second.Value;
-                resultType = typeof(TimeSpan);
-            }
-            else if (first.ValueType == typeof(DateTime) && second.ValueType == typeof(TimeSpan))
-            {
-                value = (DateTime)first.Value - (TimeSpan)second.Value;
-                resultType = typeof(DateTime);
-            }
+            if (first is string)
+                return (string)first + (string)second;
+            if (first is short)
+                return (short)first + (short)second;
+            if (first is int)
+                return (int)first + (int)second;
+            if (first is long)
+                return Convert.ToInt64(first) + Convert.ToInt64(second);
+            if (first is double)
+                return (double)first + (double)second;
+            if (first is float)
+                return (float)first + (float)second;
+            if (first is DateTime && second is TimeSpan)
+                return (DateTime)first + (TimeSpan)second;
+            if (first is TimeSpan && second is TimeSpan)
+                return (TimeSpan)first + (TimeSpan)second;
 
-            return new SqlResult(value, resultType);
+            throw new Exception("It is impossible to add these values");
         }
 
-        public static SqlResult Multiply(SqlResult first, SqlResult second)
+        public static object Substract(object first, object second)
         {
-            object value = null;
-            Type resultType = null;
+            var tuple = (first is DateTime && second is TimeSpan)
+                ? new Tuple<object, object>(first, second)
+                : ConvertToOneType(first, second);
+            first = tuple.Item1;
+            second = tuple.Item2;
 
-            if (first.ValueType == typeof(int))
-            {
-                value = (int)first.Value * (int)second.Value;
-                resultType = typeof(int);
-            }
-            else if (first.ValueType == typeof(double))
-            {
-                value = (double)first.Value * (double)second.Value;
-                resultType = typeof(double);
-            }
-            else if (first.ValueType == typeof(float))
-            {
-                value = (float)first.Value * (float)second.Value;
-                resultType = typeof(float);
-            }
+            if (first is short)
+                return (short)first - (short)second;
+            if (first is int)
+                return (int)first - (int)second;
+            if (first is long)
+                return Convert.ToInt64(first) - Convert.ToInt64(second);
+            if (first is double)
+                return (double)first - (double)second;
+            if (first is float)
+                return (float)first - (float)second;
+            if (first is TimeSpan)
+                return (TimeSpan)first - (TimeSpan)second;
+            if (first is DateTime && second is TimeSpan)
+                return (DateTime)first - (TimeSpan)second;
 
-            return new SqlResult(value, resultType);
+            throw new Exception("It is impossible to SUBSTRACT these values");
         }
 
-        public static SqlResult Divide(SqlResult first, SqlResult second)
+        public static object Multiply(object first, object second)
         {
-            object value = null;
-            Type resultType = null;
+            var tuple = ConvertToOneType(first, second);
+            first = tuple.Item1;
+            second = tuple.Item2;
 
-            if (first.ValueType == typeof(int))
-            {
-                value = (int)first.Value / (int)second.Value;
-                resultType = typeof(int);
-            }
-            else if (first.ValueType == typeof(double))
-            {
-                value = (double)first.Value / (double)second.Value;
-                resultType = typeof(double);
-            }
-            else if (first.ValueType == typeof(float))
-            {
-                value = (float)first.Value / (float)second.Value;
-                resultType = typeof(float);
-            }
+            if (first is short)
+                return (short)first * (short)second;
+            if (first is int)
+                return (int)first * (int)second;
+            if (first is long)
+                return Convert.ToInt64(first) * Convert.ToInt64(second);
+            if (first is double)
+                return (double)first * (double)second;
+            if (first is float)
+                return (float)first * (float)second;
 
-            return new SqlResult(value, resultType);
+            throw new Exception("It is impossible to MULTIPLY these values");
         }
 
-        public static bool More(SqlResult first, SqlResult second)
+        public static object Divide(object first, object second)
         {
-            if (first.ValueType == typeof(int))
-            {
-                return (int)first.Value > (int)second.Value;
-            }
-            if (first.ValueType == typeof(double))
-            {
-                return (double)first.Value > (double)second.Value;
-            }
-            if (first.ValueType == typeof(float))
-            {
-                return (float)first.Value > (float)second.Value;
-            }
-            if (first.ValueType == typeof(DateTime))
-            {
-                return (DateTime)first.Value > (DateTime)second.Value;
-            }
-            if (first.ValueType == typeof(TimeSpan))
-            {
-                return (TimeSpan)first.Value > (TimeSpan)second.Value;
-            }
+            var tuple = ConvertToOneType(first, second);
+            first = tuple.Item1;
+            second = tuple.Item2;
+
+            if (first is short)
+                return (short)first / (short)second;
+            if (first is int)
+                return (int)first / (int)second;
+            if (first is long)
+                return Convert.ToInt64(first) / Convert.ToInt64(second);
+            if (first is double)
+                return (double)first / (double)second;
+            if (first is float)
+                return (float)first / (float)second;
+
+            throw new Exception("It is impossible to DIVIDE these values");
+        }
+
+        public static bool More(object first, object second)
+        {
+            var tuple = ConvertToOneType(first, second);
+            first = tuple.Item1;
+            second = tuple.Item2;
+
+            if (first is short)
+                return (short)first > (short)second;
+            if (first is int)
+                return (int)first > (int)second;
+            if (first is long)
+                return Convert.ToInt64(first) > Convert.ToInt64(second);
+            if (first is double)
+                return (double)first > (double)second;
+            if (first is float)
+                return (float)first > (float)second;
+            if (first is DateTime)
+                return (DateTime)first > (DateTime)second;
+            if (first is TimeSpan)
+                return (TimeSpan)first > (TimeSpan)second;
+
+            throw new Exception("It is impossible to make MORE these values");
+        }
+
+        public static bool Less(object first, object second)
+        {
+            var tuple = ConvertToOneType(first, second);
+            first = tuple.Item1;
+            second = tuple.Item2;
+
+            if (first is short)
+                return (short)first < (short)second;
+            if (first is int)
+                return (int)first < (int)second;
+            if (first is long)
+                return Convert.ToInt64(first) < Convert.ToInt64(second);
+            if (first is double)
+                return (double)first < (double)second;
+            if (first is float)
+                return (float)first < (float)second;
+            if (first is DateTime)
+                return (DateTime)first < (DateTime)second;
+            if (first is TimeSpan)
+                return (TimeSpan)first < (TimeSpan)second;
+
             throw new Exception("!!1");
         }
 
-        public static bool Less(SqlResult first, SqlResult second)
+        public static bool And(object first, object second)
         {
-            if (first.ValueType == typeof(int))
-            {
-                return (int)first.Value < (int)second.Value;
-            }
-            if (first.ValueType == typeof(double))
-            {
-                return (double)first.Value < (double)second.Value;
-            }
-            if (first.ValueType == typeof(float))
-            {
-                return (float)first.Value < (float)second.Value;
-            }
-            if (first.ValueType == typeof(DateTime))
-            {
-                return (DateTime)first.Value < (DateTime)second.Value;
-            }
-            if (first.ValueType == typeof(TimeSpan))
-            {
-                return (TimeSpan)first.Value < (TimeSpan)second.Value;
-            }
-
-            throw new Exception("!!1");
-        }
-
-        public static bool And(SqlResult first, SqlResult second)
-        {
-            if (first.ValueType == typeof(bool))
-            {
-                return (bool)first.Value && (bool)second.Value;
-            }
+            if (first is bool && second is bool)
+                return (bool)first && (bool)second;
 
             throw new Exception("mismatched types");
         }
 
-        public static bool Or(SqlResult first, SqlResult second)
+        public static bool Or(object first, object second)
         {
-            if (first.ValueType == typeof(bool))
-            {
-                return (bool)first.Value || (bool)second.Value;
-            }
+            if (first is bool && second is bool)
+                return (bool)first || (bool)second;
 
             throw new Exception("mismatched types");
         }
 
-        public static bool Equal(SqlResult first, SqlResult second)
+        public static bool Equal(object first, object second)
         {
+            var tuple = ConvertToOneType(first, second);
+            first = tuple.Item1;
+            second = tuple.Item2;
 
-            if (first.ValueType == typeof(byte[]))
-            {
-                return ((byte[]) first.Value).SequenceEqual((byte[]) second.Value);
-            }
+            if (first is byte[])
+                return ((byte[])first).SequenceEqual((byte[])second);
 
-            var result = Equals(first.Value, second.Value);
+            var result = Equals(first, second);
 
             return result;
         }
     }
-
-
 }

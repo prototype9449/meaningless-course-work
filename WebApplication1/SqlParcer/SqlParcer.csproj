@@ -47,7 +47,9 @@
     <Compile Include="Point.cs" />
     <Compile Include="PolishReverseNotation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SqlResult.cs" />
+    <Compile Include="Scanner.cs" />
+    <Compile Include="Token.cs" />
+    <Compile Include="TokenType.cs" />
     <Compile Include="VariableType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -31,9 +31,11 @@ namespace SqlParcer
             return result;
         }
 
-        private static List<Point> GetPredicates(List<string> tokens)
+        private static List<Point> GetPredicates(List<Token> tokens)
         {
-            return tokens.Select(Point.Parse).Where(x => x.Type == VariableType.Context || x.Type == VariableType.Row).ToList();
+            return tokens.Where(x => x._type == TokenType.Identifier)
+                .Select(x => Point.Parse(x._lexeme))
+                .Where(x => x.Type == VariableType.Context || x.Type == VariableType.Row).ToList();
         }
 
         private static List<string> GetColumns(List<Point> predicates, VariableType variableType)
@@ -44,13 +46,13 @@ namespace SqlParcer
                 .ToList();
         }
 
-        private static Dictionary<string, SqlResult> GetRowValues(string sqlEntityName, List<Identfier> identifiers, List<string> columns)
+        private static Dictionary<string, object> GetRowValues(string sqlEntityName, List<Identfier> identifiers, List<string> columns)
         {
             var whereStatement = string.Join(" and ", identifiers.Select(x => x.Column + " = @" + x.Column));
             var columnString = string.Join(", ", columns);
             var sqlstringRequest = "select " + columnString + " from " + sqlEntityName + " where " + whereStatement;
 
-            var result = new Dictionary<string, SqlResult>();
+            var result = new Dictionary<string, object>();
 
             using (var connection = new SqlConnection(ConnectionString))
             {
@@ -70,7 +72,7 @@ namespace SqlParcer
                     {
                         for (var i = 0; i < reader.FieldCount; i++)
                         {
-                            result.Add(reader.GetName(i), new SqlResult(reader.GetValue(i), reader.GetFieldType(i)));
+                            result.Add(reader.GetName(i), reader.GetValue(i));
                         }
                     }
                 }

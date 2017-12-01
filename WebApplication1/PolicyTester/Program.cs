@@ -21,8 +21,7 @@ namespace PolicyTester
             var userIdentifierKeys = "[id][1][int]";
             var expressions = "R.EmployeeID = C.id and R.CustomerID = 1";
 
-            var t = "12:12:12";
-            var y = TypeDescriptor.GetConverter(typeof(TimeSpan)).ConvertFromString(t);
+            var r = 12.2 / 10;
 
             ContextParcer.ConnectionString = connectionString;
             var result = ContextParcer.ExecutePredicate(currentTable, userTable, expressions, rowIdentifierKeys,

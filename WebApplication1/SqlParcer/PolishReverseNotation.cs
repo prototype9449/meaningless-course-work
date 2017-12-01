@@ -4,233 +4,172 @@ using System.Linq;
 
 namespace SqlParcer
 {
-
-    public abstract class Node
-    {
-        public abstract bool IsOperator();
-        public string value { get; set; }
-    }
-
-    public class Operator : Node
-    {
-
-        public Operator(string oper)
-        {
-            this.value = oper;
-        }
-
-        public int GetPriority()
-        {
-            return ReversePolishNotation.GetPriority(this.value);
-        }
-
-        public override bool IsOperator()
-        {
-            return true;
-        }
-    }
-
-    public class Value : Node
-    {
-        public Value(string value)
-        {
-            this.value = value;
-        }
-
-        public override bool IsOperator()
-        {
-            return false;
-        }
-    }
-
     public class ReversePolishNotation
     {
-        public static List<string> GetTokens(string expression)
+        private static readonly TokenType[][] _tokenTypes = new[]
         {
-            return expression.Split('"')
-                .Select((element, index) => index % 2 == 0
-                    ? element.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                    : new[] { element })
-                .SelectMany(element => element).ToList();
-        }
-
-
-        public static int GetPriority(string token)
-        {
-            var result = -1;
-
-            switch (token)
+            new[] {TokenType.LeftParen, TokenType.RightParen},
+            new[] {TokenType.And, TokenType.Or},
+            new[]
             {
-                case "(":
-                case ")":
-                    result = 1;
-                    break;
-                case "and":
-                case "or":
-                    result = 2;
-                    break;
-                case "=":
-                case ">":
-                case "<":
-                case ">=":
-                case "<=":
-                case "like":
-                    result = 3;
-                    break;
-                case "-":
-                case "+":
-                    result = 4;
-                    break;
-                case "*":
-                case "/":
-                    result = 5;
-                    break;
-                case "as":
-                    result = 6;
-                    break;
+                TokenType.Equal, TokenType.BangEqual, TokenType.Greater, TokenType.GreaterEqual, TokenType.Less,
+                TokenType.LessEqual, TokenType.Like
+            },
+            new[] {TokenType.Minus, TokenType.Plus},
+            new[] {TokenType.Star, TokenType.Slash},
+            new[] {TokenType.As}
+        };
+
+        public static int GetPriority(TokenType token)
+        {
+            for (var i = 0; i < _tokenTypes.Length; i++)
+            {
+                if (_tokenTypes[i].Contains(token))
+                {
+                    return i;
+                }
             }
 
-            return result;
+            return -1;
         }
 
-        public static List<Node> GetNodes(List<string> tokens)
+        public static List<Token> GetTokens(string expression)
         {
-            return tokens.Select(x => GetPriority(x) == -1 ? (Node)new Value(x) : (Node)new Operator(x)).ToList();
-        }
+            var tokens = new Scanner(expression).ScanTokens();
+            var resultTokens = new List<Token>();
 
-        public static List<Node> ConvertToPrefixVersion(List<string> tokens)
-        {
-            var nodes = GetNodes(tokens);
-
-            var stack = new Stack<Node>();
-            var result = new List<Node>();
-
-            foreach (var node in nodes)
+            var leftTokens = new List<TokenType>
             {
-                if (!node.IsOperator())
+                TokenType.And,
+                TokenType.Or,
+                TokenType.LeftParen,
+                TokenType.BangEqual,
+                TokenType.Equal,
+                TokenType.Greater,
+                TokenType.GreaterEqual,
+                TokenType.LessEqual,
+                TokenType.Less,
+            };
+
+            for (var i = 0; i < tokens.Count; i++)
+            {
+                if (tokens[i]._type == TokenType.Minus)
                 {
-                    result.Add(node);
+                    if (i == 0 || leftTokens.Contains(tokens[i - 1]._type))
+                    {
+                        resultTokens.Add(new Token(TokenType.ShortInt, "0", (short)0));
+                    }
+                }
+                resultTokens.Add(tokens[i]);
+            }
+
+            return resultTokens;
+        }
+
+        public static List<Token> ConvertToPrefixVersion(List<Token> tokens)
+        {
+            var stack = new Stack<Token>();
+            var result = new List<Token>();
+
+            foreach (var node in tokens)
+            {
+                if (node.IsOperator())
+                {
+                    while (stack.Count != 0 && GetPriority(node._type) <= GetPriority(stack.Peek()._type))
+                        result.Add(stack.Pop());
+                    stack.Push(node);
+                }
+                else if (node._type == TokenType.RightParen)
+                {
+                    while (stack.Count != 0 && stack.Peek()._type != TokenType.LeftParen)
+                        result.Add(stack.Pop());
+                    if (stack.Count != 0)
+                        stack.Pop();
+                    else
+                        throw new Exception("there was not )");
+                }
+                else if (node._type == TokenType.LeftParen)
+                {
+                    stack.Push(node);
                 }
                 else
                 {
-                    if (node.value == ")")
-                    {
-                        while (stack.Count != 0 && stack.Peek().value != "(")
-                        {
-                            result.Add(stack.Pop());
-                        }
-                        if (stack.Count != 0)
-                        {
-                            stack.Pop();
-                        }
-                        else
-                        {
-                            throw new Exception("there was not )");
-                        }
-                    }
-                    else if (node.value == "(")
-                    {
-                        stack.Push(node);
-                    }
-                    else
-                    {
-                        while (stack.Count != 0 && GetPriority(node.value) <= GetPriority(stack.Peek().value))
-                        {
-                            result.Add(stack.Pop());
-                        }
-                        stack.Push(node);
-                    }
-
+                    result.Add(node);
                 }
             }
 
             while (stack.Count != 0)
-            {
                 result.Add(stack.Pop());
-            }
             return result;
         }
 
-        public static SqlResult GetValue(SqlResult first, SqlResult second, string oper)
+        public static object GetValue(object first, object second, Token oper)
         {
-            var tuple = oper == "as" ? new Tuple<SqlResult, SqlResult>(first, second) : Operations.ConvertToOneType(first, second);
-            first = tuple.Item1;
-            second = tuple.Item2;
-
-            switch (oper)
+          switch (oper._type)
             {
-                case "+":
+                case TokenType.Plus:
                     return Operations.Add(first, second);
-                case "as":
+                case TokenType.As:
                     return Operations.As(first, second);
-                case "-":
+                case TokenType.Minus:
                     return Operations.Substract(first, second);
-                case "*":
+                case TokenType.Star:
                     return Operations.Multiply(first, second);
-                case "/":
+                case TokenType.Slash:
                     return Operations.Divide(first, second);
-                case ">":
-                    return new SqlResult(Operations.More(first, second), typeof(bool));
-                case "<":
-                    return new SqlResult(Operations.Less(first, second), typeof(bool));
-                case ">=":
-                    return new SqlResult(Operations.Equal(first, second) || Operations.More(first, second), typeof(bool));
-                case "<=":
-                    return new SqlResult(Operations.Equal(first, second) || Operations.Less(first, second), typeof(bool));
-                case "=":
-                    return new SqlResult(Operations.Equal(first, second), typeof(bool));
-                case "and":
-                    return new SqlResult(Operations.And(first, second), typeof(bool));
-                case "or":
-                    return new SqlResult(Operations.Or(first, second), typeof(bool));
+                case TokenType.Greater:
+                    return Operations.More(first, second);
+                case TokenType.Less:
+                    return Operations.Less(first, second);
+                case TokenType.GreaterEqual:
+                    return Operations.Equal(first, second) || Operations.More(first, second);
+                case TokenType.LessEqual:
+                    return Operations.Equal(first, second) || Operations.Less(first, second);
+                case TokenType.Equal:
+                    return Operations.Equal(first, second);
+                case TokenType.BangEqual:
+                    return !Operations.Equal(first, second);
+                case TokenType.And:
+                    return Operations.And(first, second);
+                case TokenType.Or:
+                    return Operations.Or(first, second);
             }
             return null;
         }
 
-        public static bool Evaluate(List<string> tokens, Dictionary<string, SqlResult> dict)
+        public static bool Evaluate(List<Token> tokens, Dictionary<string, object> dict = null)
         {
+            dict = dict ?? new Dictionary<string, object>();
             var nodes = ConvertToPrefixVersion(tokens);
-            var stack = new Stack<SqlResult>();
+            var stack = new Stack<object>();
 
             foreach (var node in nodes)
-            {
-                if (!node.IsOperator())
+                if (node.IsOperator())
                 {
-                    if (dict.ContainsKey(node.value))
-                    {
-                        var v = dict[node.value];
-                        stack.Push(new SqlResult(v.Value, v.ValueType));
-                    }
-                    else
-                    {
-                        if (node.value.StartsWith("\"") && node.value.EndsWith("\"") && node.value.Length > 1)
-                        {
-                            stack.Push(new SqlResult(node.value.Substring(1, node.value.Length - 2), typeof(string)));
-                        }
-                        else
-                        {
-                            stack.Push(new SqlResult(node.value, typeof(string)));
-                        }
-                    }
-                }
-                else
-                {
+
                     var second = stack.Pop();
                     var first = stack.Pop();
 
-                    var result = GetValue(first, second, node.value);
+                    var result = GetValue(first, second, node);
 
                     stack.Push(result);
                 }
-            }
+                else if (node._type == TokenType.Identifier && dict.ContainsKey(node._lexeme))
+                {
+                    var identifierValue = dict[node._lexeme];
+                    stack.Push(identifierValue);
+                }
+                else
+                {
+                    stack.Push(node._literal);
+                }
+
 
             var res = stack.Pop();
-            if (res.ValueType != typeof(bool))
-            {
+            if (res.GetType() != typeof(bool))
                 throw new Exception("expression should return boolean");
-            }
 
-            return (bool)res.Value;
+            return (bool)res;
         }
     }
 }
