@@ -1,25 +1,19 @@
 ﻿using DBModels;
 using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DBFiller
 {
     class Filler
     {
-        public string ConnectionString { get; set; }
-        public DBStructure dbStricture { get; set; }
+        public DBStructure DbStricture { get; set; }
 
-        private char[] chars = "abcdefghijklmnopqrstuvwxyz1234567890 ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
+        private readonly char[] chars = "abcdefghijklmnopqrstuvwxyz1234567890 ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
         private readonly Random _random = new Random();
 
-        public Filler(string connectionString, DBStructure dbStructure)
+        public Filler(DBStructure dbStructure)
         {
-            ConnectionString = connectionString;
-            dbStricture = dbStricture;
+            DbStricture = dbStructure;
         }
 
         private int GetRandomInt(int start, int end)

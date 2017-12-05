@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DBFiller
 {
@@ -11,15 +9,17 @@ namespace DBFiller
         static void Main(string[] args)
         {
             var arguments = args.ToList();
-            var dbStricture = new DBStructure();
-            dbStricture.EmployeeNumber = GetNumber(arguments, "employees");
-            dbStricture.CustomerNumber = GetNumber(arguments, "customers");
-            dbStricture.OrderNumber = GetNumber(arguments, "orders");
-            dbStricture.GroupNumber = GetNumber(arguments, "groups");
-            dbStricture.OrderDetailNumber = GetNumber(arguments, "orderdetails");
-            dbStricture.PolicyNumber = GetNumber(arguments, "policies");
-            dbStricture.EmployeeGroupNumber = GetNumber(arguments, "employeegroups");
-            dbStricture.CategoryNumber = GetNumber(arguments, "categories");
+            var dbStricture = new DBStructure
+            {
+                EmployeeNumber = GetNumber(arguments, "employees"),
+                CustomerNumber = GetNumber(arguments, "customers"),
+                OrderNumber = GetNumber(arguments, "orders"),
+                GroupNumber = GetNumber(arguments, "groups"),
+                OrderDetailNumber = GetNumber(arguments, "orderdetails"),
+                PolicyNumber = GetNumber(arguments, "policies"),
+                EmployeeGroupNumber = GetNumber(arguments, "employeegroups"),
+                CategoryNumber = GetNumber(arguments, "categories")
+            };
 
 
             new Filler(dbStricture).FillDB();
