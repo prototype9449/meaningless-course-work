@@ -211,3 +211,5 @@ E:\RemotedProjects\security-policy\WebApplication1\WebApplication1\bin\zh-Hant\S
 E:\RemotedProjects\security-policy\WebApplication1\WebApplication1\obj\Debug\WebApplication1.csprojResolveAssemblyReference.cache
 E:\RemotedProjects\security-policy\WebApplication1\WebApplication1\obj\Debug\WebApplication1.dll
 E:\RemotedProjects\security-policy\WebApplication1\WebApplication1\obj\Debug\WebApplication1.pdb
+C:\repositories\security-policy\WebApplication1\WebApplication1\bin\DBModels.dll
+C:\repositories\security-policy\WebApplication1\WebApplication1\bin\DBModels.pdb
