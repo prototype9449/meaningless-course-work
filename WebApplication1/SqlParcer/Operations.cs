@@ -21,7 +21,9 @@ namespace SqlParcer
             {"string", typeof(string)},
 
             {"datetime", typeof(DateTime)},
-            {"timespan", typeof(TimeSpan)}
+            {"timespan", typeof(TimeSpan)},
+            {"datetimeoffset", typeof(DateTimeOffset)},
+            {"guid", typeof(Guid) }
         };
 
         public static List<Type> TypeConvert = new List<Type>()
