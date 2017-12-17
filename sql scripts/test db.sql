@@ -1,7 +1,9 @@
+
+use Test_100_000
 GO
 CREATE TABLE [dbo].[TestTable](
 	[id] [int] IDENTITY(1,1) NOT NULL,
-	[BoolType] [bit] bot null,
+	[BoolType] [bit] not null,
 	[IntType] [int] not null,
 	[StringType] [nvarchar](500) NOT NULL,
 	[DateTimeType] [datetime] NOT NULL,
@@ -17,21 +19,19 @@ CREATE TABLE [dbo].[TestTable](
 GO
 CREATE TABLE [dbo].[Employees](
 	[id] [int] IDENTITY(1,1) NOT NULL,
-	[BoolType] [bool] bot null,
+	[BoolType] [bit] not null,
 	[IntType] [int] not null,
 	[StringType] [nvarchar](500) NOT NULL,
 	[DateTimeType] [datetime] NOT NULL,
 	[DateTimeOffsetType] [datetimeoffset] NOT NULL,
 	[TimeType] [time] NOT NULL,
 	[GuidType] [uniqueidentifier] NOT NULL,
-	[XmlType] [xml] not null
- CONSTRAINT [PK_TestTable] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_Employees] PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 
-USE [OnlineShop]
 GO
 /****** Object:  Table [dbo].[EmployeeGroups]    Script Date: 5/2/2017 8:52:02 PM ******/
 SET ANSI_NULLS ON
@@ -120,7 +120,7 @@ EXEC sp_configure 'clr enabled', 1
 RECONFIGURE; 
 
 
-ALTER DATABASE NewOnlineShop SET TRUSTWORTHY ON;
+ALTER DATABASE Test_100_000 SET TRUSTWORTHY ON;
 
 
 drop security policy if exists dbo.[TestTablePolicy]   
@@ -133,7 +133,7 @@ drop function if exists dbo.getUserAccessClr
 go
 drop ASSEMBLY if exists Parser
 go
-create ASSEMBLY Parser FROM 'C:\repositories\security-policy\WebApplication1\SqlParcer\bin\Debug\SqlParcer.dll'
+create ASSEMBLY Parser FROM 'E:\RemotedProjects\security-policy\WebApplication1\SqlParcer\bin\Release\SqlParcer.dll'
 WITH PERMISSION_SET = UNSAFE;    
 GO 
 
@@ -145,7 +145,7 @@ create FUNCTION dbo.getUserAccessClr(
 	@currentRowIdentifiers nvarchar(500),
 	@userRowIdentifiers nvarchar(500)
 ) RETURNS bit  
- AS EXTERNAL NAME Parser.[SqlParcer.ContextParcer].ExecutePredicate;   
+ AS EXTERNAL NAME Parser.[SqlParser.ContextParser].ExecutePredicate;   
 GO 
 
 CREATE FUNCTION dbo.getUserAccess(@CurrentTableName nvarchar(200), @RowIdentifiers nvarchar(max))  

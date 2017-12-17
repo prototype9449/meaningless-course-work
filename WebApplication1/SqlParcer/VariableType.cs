@@ -1,4 +1,4 @@
-﻿namespace SqlParcer
+﻿namespace SqlParser
 {
     public enum VariableType
     {

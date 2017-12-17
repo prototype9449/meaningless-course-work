@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace SqlParcer
+namespace SqlParser
 {
     public static class Operations
     {
-        public static Dictionary<string, Type> types = new Dictionary<string, Type>
+        public static readonly Dictionary<string, Type> types = new Dictionary<string, Type>
         {
             {"byte", typeof(byte)},
             {"short", typeof(short)},
@@ -26,7 +26,7 @@ namespace SqlParcer
             {"guid", typeof(Guid) }
         };
 
-        public static List<Type> TypeConvert = new List<Type>()
+        public static readonly List<Type> TypeConvert = new List<Type>()
         {
             typeof(byte), typeof(short), typeof(int), typeof(long), typeof(double)
         };

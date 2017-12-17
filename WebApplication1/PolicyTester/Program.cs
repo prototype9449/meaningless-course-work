@@ -1,5 +1,5 @@
 ﻿using System;
-using SqlParcer;
+using SqlParser;
 
 namespace PolicyTester
 {
@@ -7,17 +7,16 @@ namespace PolicyTester
     {
         static void Main(string[] args)
         {
-            var connectionString = "Data Source=HOME;Initial Catalog=NewOnlineShop;Integrated Security=True";
-            var currentTable = "dbo.Orders";
+            var connectionString = "Data Source=HOME;Initial Catalog=Test_10_000;Integrated Security=True";
+            var currentTable = "dbo.TestTable";
             var userTable = "dbo.Employees";
             var rowIdentifierKeys = "[id][1][int]";
             var userIdentifierKeys = "[id][1][int]";
-            var expressions = "R.EmployeeID = C.id and R.CustomerID = 1";
+            var expressions = "R.BoolType = true as bool";
 
-            var r = 12.2 / 10;
 
-            ContextParcer.ConnectionString = connectionString;
-            var result = ContextParcer.ExecutePredicate(currentTable, userTable, expressions, rowIdentifierKeys,
+            ContextParser.ConnectionString = connectionString;
+            var result = ContextParser.ExecutePredicate(currentTable, userTable, expressions, rowIdentifierKeys,
                 userIdentifierKeys);
 
             Console.WriteLine(result);

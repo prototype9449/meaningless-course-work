@@ -55,9 +55,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlParcer\SqlParcer.csproj">
+    <ProjectReference Include="..\SqlParcer\SqlParser.csproj">
       <Project>{c9e26453-1344-47ad-b18e-43f5a094d5dd}</Project>
-      <Name>SqlParcer</Name>
+      <Name>SqlParser</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

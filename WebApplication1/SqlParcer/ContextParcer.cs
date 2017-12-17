@@ -6,10 +6,10 @@ using System.Data.SqlClient;
 using System.Linq;
 using Microsoft.SqlServer.Server;
 
-namespace SqlParcer
+namespace SqlParser
 {
 
-    public static class ContextParcer
+    public static class ContextParser
     {
         public static string ConnectionString = "context connection=true";
 
@@ -41,6 +41,7 @@ namespace SqlParcer
             return predicates
                 .Where(x => x.Type == variableType)
                 .Select(x => x.Value)
+                .Distinct()
                 .ToList();
         }
 
@@ -99,16 +100,24 @@ namespace SqlParcer
             var contextIdentifers = GetIdentifiers(contextIdentifierKeys);
             var contextColumns = GetColumns(predicates, VariableType.Context);
 
-            var rowValues = GetRowValues(currentTableName, rowIdentifiers, rowColumns).ToDictionary(key => "R." + key.Key, value => value.Value);
-            var contextValues = GetRowValues(contextTableName, contextIdentifers, contextColumns).ToDictionary(key => "C." + key.Key, value => value.Value);
-
-            foreach (var sqlResult in contextValues)
+            var resultValues = new Dictionary<string, object>();
+            if(rowColumns.Count > 0)
             {
-                rowValues.Add(sqlResult.Key, sqlResult.Value);
+                resultValues = GetRowValues(currentTableName, rowIdentifiers, rowColumns).ToDictionary(key => "R." + key.Key, value => value.Value);
             }
 
+            if(contextColumns.Count > 0)
+            {
+                var contextValues = GetRowValues(contextTableName, contextIdentifers, contextColumns).ToDictionary(key => "C." + key.Key, value => value.Value);
 
-            return ReversePolishNotation.Evaluate(tokens, rowValues);
+                foreach (var sqlResult in contextValues)
+                {
+                    resultValues.Add(sqlResult.Key, sqlResult.Value);
+                }
+            }
+            
+
+            return ReversePolishNotation.Evaluate(tokens, resultValues);
         }
     }
 
