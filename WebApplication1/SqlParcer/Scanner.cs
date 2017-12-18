@@ -145,7 +145,7 @@ namespace SqlParser
                 while (IsDigit(Peek())) Advance();
 
                 AddToken(TokenType.Double,
-                    double.Parse(Substring(_source, _start, _current).Replace('.', ',')));
+                    double.Parse(Substring(_source, _start, _current)));
                 return;
             }
 

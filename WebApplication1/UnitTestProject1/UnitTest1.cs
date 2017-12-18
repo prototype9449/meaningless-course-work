@@ -227,7 +227,7 @@ namespace UnitTestProject1
         [TestMethod]
         public void TestMethod22()
         {
-            var expression = "11 + 10 > 12 and \"3,5\" as double > 0.5";
+            var expression = "11 + 10 > 12 and \"3.5\" as double > 0.5";
             var tokens = ReversePolishNotation.GetTokens(expression);
             var t = ReversePolishNotation.Evaluate(tokens);
 
@@ -377,5 +377,27 @@ namespace UnitTestProject1
 
             Assert.AreEqual(t, true);
         }
+
+        [TestMethod]
+        public void TestMethod35()
+        {
+            var expression = "\"4 / 3 / 2007 2:23:57 AM\" as datetimeoffset =  \"4 / 3 / 2007 2:23:57 AM\" as datetimeoffset'";
+            var tokens = ReversePolishNotation.GetTokens(expression);
+            var t = ReversePolishNotation.Evaluate(tokens);
+
+            Assert.AreEqual(t, true);
+        }
+
+        [TestMethod]
+        public void TestMethod36()
+        {
+            var expression = "\"0E984725-C51C-4BF4-9960-E1C80E27ABA0\" as guid =  \"0E984725-C51C-4BF4-9960-E1C80E27ABA0\" as guid";
+            var tokens = ReversePolishNotation.GetTokens(expression);
+            var t = ReversePolishNotation.Evaluate(tokens);
+
+            Assert.AreEqual(t, true);
+        }
+        
+        
     }
 }

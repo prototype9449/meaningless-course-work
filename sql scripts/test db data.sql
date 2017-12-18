@@ -8,7 +8,6 @@ DECLARE @TimeType time = '12:34:54.1237'
 DECLARE @GuidType uniqueidentifier = '0E984725-C51C-4BF4-9960-E1C80E27ABA0'
 
 
-
 declare @i int = 1
 declare @rows_to_insert int = 18
 
