@@ -13,6 +13,8 @@ namespace SqlParser
     {
         public static string ConnectionString = "context connection=true";
 
+        public static Random random = new Random();
+
         private static List<Identfier> GetIdentifiers(string identifierRow)
         {
             var keyValues = identifierRow.Split(new[] { '[', ']' }, StringSplitOptions.RemoveEmptyEntries);
@@ -85,6 +87,36 @@ namespace SqlParser
 
             return result;
 
+        }
+
+        [SqlFunction(DataAccess = DataAccessKind.Read)]
+        public static bool ExecuteStaticPredicate
+            (string expressions,
+            int id1, bool boolType1, int intType1, string stringType1, DateTime dateTimeType1, DateTimeOffset datetimeOffsetType1, TimeSpan timeType1, Guid guidType1,
+            int id2, bool boolType2, int intType2, string stringType2, DateTime dateTimeType2, DateTimeOffset datetimeOffsetType2, TimeSpan timeType2, Guid guidType2)
+        {
+            var tokens = ReversePolishNotation.GetTokens(expressions);
+
+            var dict = new Dictionary<string, object>()
+            {
+                {"R.BoolType",boolType1 },
+                {"R.IntType",id1 },
+                {"R.StringType",stringType1 },
+                {"R.DateTimeType",dateTimeType1 },
+                {"R.DateTimeOffsetType",datetimeOffsetType1 },
+                {"R.TimeType",timeType1 },
+                {"R.GuidType",guidType1 },
+
+                {"C.BoolType",boolType2 },
+                {"C.IntType",id2 },
+                {"C.StringType",stringType2 },
+                {"C.DateTimeType",dateTimeType2 },
+                {"C.DateTimeOffsetType",datetimeOffsetType2 },
+                {"C.TimeType",timeType2 },
+                {"C.GuidType",guidType2 },
+            };
+            
+            return ReversePolishNotation.Evaluate(tokens, dict);
         }
 
         [SqlFunction(DataAccess = DataAccessKind.Read)]
