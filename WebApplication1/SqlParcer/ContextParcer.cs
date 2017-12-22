@@ -11,9 +11,9 @@ namespace SqlParser
 
     public static class ContextParser
     {
-        public static string ConnectionString = "context connection=true";
+        public static readonly string ConnectionString = "context connection=true";
 
-        public static Random random = new Random();
+        public static readonly Random random = new Random();
 
         private static List<Identfier> GetIdentifiers(string identifierRow)
         {

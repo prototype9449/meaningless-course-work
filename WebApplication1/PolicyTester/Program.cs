@@ -15,7 +15,7 @@ namespace PolicyTester
             var expressions = "R.BoolType = true as bool";
 
 
-            ContextParser.ConnectionString = connectionString;
+            //ContextParser.ConnectionString = connectionString;
             var result1 = ContextParser.ExecuteStaticPredicate(expressions, 1, true, 1, "fdfd", DateTime.Now, DateTimeOffset.MinValue, TimeSpan.MinValue, new Guid(),
                 1, true, 1, "fdfd", DateTime.Now, DateTimeOffset.MinValue, TimeSpan.MinValue, new Guid());
 
