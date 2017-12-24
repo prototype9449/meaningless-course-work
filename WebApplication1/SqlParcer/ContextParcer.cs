@@ -115,7 +115,7 @@ namespace SqlParser
                 {"C.TimeType",timeType2 },
                 {"C.GuidType",guidType2 },
             };
-            
+            return true;
             return ReversePolishNotation.Evaluate(tokens, dict);
         }
 
