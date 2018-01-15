@@ -123,8 +123,8 @@ create FUNCTION dbo.getUserAccessClr(
 	@currentRowIdentifiers nvarchar(500),
 	@userRowIdentifiers nvarchar(500)
 ) RETURNS bit  
- AS EXTERNAL NAME Parser.[SqlParcer.ContextParcer].ExecutePredicate;   
-GO 
+ AS EXTERNAL NAME Parser.[SqlParser.ContextParser].ExecutePredicate;   
+GO  
 
 CREATE FUNCTION dbo.getUserAccess(@CurrentTableName nvarchar(200), @RowIdentifiers nvarchar(max))  
 RETURNS bit

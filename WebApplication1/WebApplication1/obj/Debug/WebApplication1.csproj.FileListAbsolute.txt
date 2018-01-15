@@ -215,3 +215,5 @@ C:\repositories\security-policy\WebApplication1\WebApplication1\bin\DBModels.dll
 C:\repositories\security-policy\WebApplication1\WebApplication1\bin\DBModels.pdb
 E:\RemotedProjects\security-policy\WebApplication1\WebApplication1\bin\DBModels.dll
 E:\RemotedProjects\security-policy\WebApplication1\WebApplication1\bin\DBModels.pdb
+C:\repositories\security-policy\WebApplication1\WebApplication1\bin\DBModels.dll.config
+C:\repositories\security-policy\WebApplication1\WebApplication1\obj\Debug\WebApplication1.csproj.CoreCompileInputs.cache
