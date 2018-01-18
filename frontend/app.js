@@ -28,7 +28,9 @@ const restClient = jsonRest('api');
 //const uploadCapableClient = addUploadFeature(restClient);
 
 render(
-  <Admin authClient={authClient} restClient={restClient} title="Test Page" locale="en" messages={messages}>
+  <Admin theme={{button: {
+      textTransform: 'initial'
+    },}} authClient={authClient} restClient={restClient} title="Test Page" locale="en" messages={messages}>
     <Resource name="customers" list={CustomerList} create={CustomerCreate} edit={CustomerEdit} remove={Delete}
               show={CustomerShow}
               icon={CustomerIcon}/>

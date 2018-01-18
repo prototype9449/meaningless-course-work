@@ -11,7 +11,7 @@ namespace SqlParser
 
     public static class ContextParser
     {
-        public static readonly string ConnectionString = "context connection=true";
+        public static readonly string ConnectionString = "Data Source=CO-YAR-WS208;Initial Catalog=OnlineShop;Integrated Security=True;MultipleActiveResultSets=True;Application Name=EntityFramework";
 
         public static readonly Random random = new Random();
 

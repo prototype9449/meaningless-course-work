@@ -17,7 +17,6 @@ const styles = {
         paddingRight: 16,
         verticalAlign: 'middle',
         letterSpacing: 0,
-        textTransform: 'uppercase',
         fontWeight: 500,
         fontSize: 14,
     },

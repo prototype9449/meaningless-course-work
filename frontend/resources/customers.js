@@ -152,8 +152,6 @@ export const CustomerCreate = ({...props}) => (
   <Create {...props} defaultValues={{created_at: new Date()}}>
     <SimpleForm>
       <TextInput source="FullName" validate={minLength(10)}/>
-      <TextInput source="CompanyName" validate={minLength(10)}/>
-      <TextInput source="Phone" validate={minLength(10)}/>
       <TextInput source="City" validate={minLength(4)}/>
       <LongTextInput source="Address" validate={minLength(10)}/>
     </SimpleForm>

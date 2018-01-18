@@ -19,6 +19,7 @@ import { setSidebarVisibility as setSidebarVisibilityAction } from '../../action
 injectTapEventPlugin();
 
 const styles = {
+
     wrapper: {
         // Avoid IE bug with Flexbox, see #467
         display: 'flex',

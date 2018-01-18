@@ -60,6 +60,7 @@ const Admin = ({
 
   const logout = authClient ? createElement(logoutButton || Logout) : null;
 
+  debugger
   return (
     <Provider store={store}>
       <TranslationProvider messages={messages}>
