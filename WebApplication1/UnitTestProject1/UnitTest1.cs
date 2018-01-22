@@ -329,6 +329,19 @@ namespace UnitTestProject1
         }
 
         [TestMethod]
+        public void TestMethod129()
+        {
+            var expression = "\"12.12:12:12\" as timespan = f";
+            var tokens = ReversePolishNotation.GetTokens(expression);
+            var t = ReversePolishNotation.Evaluate(tokens, new Dictionary<string, object>()
+            {
+                {"f", new TimeSpan(12,12,12,12)}
+            });
+
+            Assert.AreEqual(t, true);
+        }
+
+        [TestMethod]
         public void TestMethod30()
         {
             var expression = "\"12:12:12\" as timespan > \"12:12:10\" as timespan";
