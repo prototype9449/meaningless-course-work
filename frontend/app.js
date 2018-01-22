@@ -30,7 +30,7 @@ const restClient = jsonRest('api');
 render(
   <Admin theme={{button: {
       textTransform: 'initial'
-    },}} authClient={authClient} restClient={restClient} title="Test Page" locale="en" messages={messages}>
+    },}} authClient={authClient} restClient={restClient} title="Application" locale="en" messages={messages}>
     <Resource name="customers" list={CustomerList} create={CustomerCreate} edit={CustomerEdit} remove={Delete}
               show={CustomerShow}
               icon={CustomerIcon}/>
